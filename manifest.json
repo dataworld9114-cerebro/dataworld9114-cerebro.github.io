@@ -41,6 +41,14 @@
       "version": "v0.1",
       "updated": "2026-08-31",
       "note": "단백체 데이터 등록 — KEA 형식 Full-version"
+    },
+    {
+      "id": "kmap",
+      "label": "대사체 (KMAP)",
+      "file": "docs/kmap.html",
+      "version": "v0.1",
+      "updated": "2026-08-31",
+      "note": "대사체 데이터 등록"
     }
   ]
 }
