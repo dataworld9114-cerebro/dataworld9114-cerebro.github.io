@@ -1,0 +1,46 @@
+{
+  "site_title": "생명연 데이터 등록 인터랙티브 가이드",
+  "release": "v0.1",
+  "docs": [
+    {
+      "id": "kra",
+      "label": "NGS 유전체 (KRA)",
+      "file": "docs/kra-ngs.html",
+      "version": "v0.1",
+      "updated": "2026-08-31",
+      "note": "NGS 유전체 데이터 등록 — K-BDS KRA Full"
+    },
+    {
+      "id": "kea",
+      "label": "기능유전체 (KEA)",
+      "file": "docs/kea.html",
+      "version": "v0.1",
+      "updated": "2026-08-31",
+      "note": "기능유전체 데이터 등록 100% Full-version"
+    },
+    {
+      "id": "kna",
+      "label": "염기서열 (KNA)",
+      "file": "docs/kna.html",
+      "version": "v0.1",
+      "updated": "2026-08-31",
+      "note": "유전체 데이터 등록 — 염기서열 Full-version"
+    },
+    {
+      "id": "kvar",
+      "label": "유전체변이 (KVar)",
+      "file": "docs/kvar.html",
+      "version": "v0.1",
+      "updated": "2026-08-31",
+      "note": "유전체 변이 데이터 등록 Full-version"
+    },
+    {
+      "id": "kpop",
+      "label": "단백체 (KPOP)",
+      "file": "docs/kpop.html",
+      "version": "v0.1",
+      "updated": "2026-08-31",
+      "note": "단백체 데이터 등록 — KEA 형식 Full-version"
+    }
+  ]
+}

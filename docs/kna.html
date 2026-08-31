@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>유전체 데이터 등록 인터랙티브 가이드 (염기서열, 100% Full-version)</title>
+    <style>
+        body { font-family: 'Malgun Gothic', sans-serif; background-color: #f8f9fa; margin: 0; padding: 10px 20px; }
+        .container { display: flex; gap: 15px; width: 100%; max-width: 100%; margin: auto; height: 95vh; box-sizing: border-box; }
+
+        .linkage-panel { flex: 0.8; background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow-y: auto; border-left: 5px solid #1F4E78; }
+        .flow-panel { flex: 1.2; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow-y: auto; }
+        .detail-panel { flex: 5.0; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+
+        h2 { color: #1F4E78; text-align: center; font-size: 22px; margin-bottom: 15px; }
+
+        .link-box { background: #e9ecef; border: 2px solid #adb5bd; border-radius: 8px; padding: 10px; margin: 8px 0; text-align: center; font-weight: bold; font-size: 0.85em; color: #495057; }
+        .link-box.system { background: #cce5ff; border-color: #b8daff; color: #004085; }
+        .link-box.excel { background: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .link-box.warn { background: #fff3cd; border-color: #ffeeba; color: #856404; font-size: 0.75em; }
+
+        .node { padding: 10px; margin: 4px 0; border-radius: 8px; text-align: center; cursor: pointer; font-weight: bold; transition: all 0.2s; font-size: 0.85em; }
+        .node:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); filter: brightness(0.95); }
+        .node.active { box-shadow: 0 0 0 3px #333; }
+        .node.bioproject { background-color: #DDEBF7; border: 2px solid #5B9BD5; color: #1F4E78; }
+        .node.biosample-std { background-color: #E2EFDA; border: 2px solid #70AD47; color: #375623; }
+        .node.biosample-mims { background-color: #FFF2CC; border: 2px solid #FFC000; color: #7F6000; }
+        .node.hts { background-color: #E2EFDA; border: 2px solid #70AD47; color: #375623; }
+        .node.ma { background-color: #FFF2CC; border: 2px solid #FFC000; color: #7F6000; }
+        .node.nucseq { background-color: #E6E0F5; border: 2px solid #7A5FC7; color: #3D2E7A; }
+        .node.future-slot { background-color: #F1F1F1; border: 2px dashed #bbb; color: #999; cursor: default; font-weight: normal; }
+        .node.future-slot:hover { transform: none; box-shadow: none; filter: none; }
+
+        .condition { text-align: center; font-size: 0.85em; color: white; margin: 10px 0; font-weight: bold; background: #ED7D31; padding: 8px; border-radius: 10px; width: 95%; margin-left: auto; margin-right: auto; }
+        .condition-desc { font-size: 0.8em; font-weight: normal; margin-top: 4px; text-align: left; padding: 6px; background: rgba(255,255,255,0.2); border-radius: 5px; line-height: 1.3; color: #fff; }
+        .arrow { text-align: center; font-size: 20px; color: #999; margin: 0; font-weight: bold; }
+
+        .datatype-select-box { background: #1F4E78; padding: 12px; border-radius: 10px; margin-bottom: 12px; }
+        .datatype-select-box label { color: #fff; font-size: 0.8em; font-weight: bold; display:block; margin-bottom:6px; }
+        .datatype-select-box select { width: 100%; padding: 7px; border-radius: 6px; border: none; font-weight: bold; color: #1F4E78; cursor:pointer; }
+
+        .controls { background: #f1f3f5; padding: 12px; border-radius: 8px; margin-bottom: 12px; display: flex; gap: 15px; flex-wrap: wrap; }
+        .control-group { display: flex; align-items: center; gap: 8px; font-size: 0.85em; font-weight: bold; color: #333; }
+        select { padding: 4px 8px; border-radius: 4px; border: 1px solid #ced4da; font-family: inherit; font-weight:bold; color:#1F4E78; outline:none; cursor: pointer; font-size: 0.9em; }
+        select.dynamic-dropdown { font-weight: normal; color:#333; border:1px solid #aaa; padding: 3px; width: 100%; max-width:180px; font-size: 0.85em; }
+        select:focus { border-color: #1F4E78; box-shadow: 0 0 0 2px rgba(31,78,120,0.2); }
+
+        .table-container { overflow-y: auto; flex-grow: 1; border: 1px solid #dee2e6; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8em; }
+        th, td { border: 1px solid #dee2e6; padding: 6px 8px; text-align: left; vertical-align: middle; }
+        th { background-color: #1F4E78; color: white; text-align: center; position: sticky; top: 0; z-index: 1; }
+        .dimmed { opacity: 0.4; background-color: #f8f9fa; }
+        .dimmed td { text-decoration: line-through; text-decoration-color: #adb5bd; }
+        .dimmed select.dynamic-dropdown { opacity: 0.5; pointer-events: none; }
+
+        .tag { display: inline-block; padding: 3px 6px; border-radius: 4px; font-size: 0.8em; font-weight: bold; color: white; text-align: center; min-width: 15px;}
+        .tag.m { background-color: #FFC000; color: #333; }
+        .tag.o { background-color: #70AD47; }
+        .tag.g { background-color: #ED7D31; }
+        .tag.na { background-color: #adb5bd; }
+        .tag.std-y { background-color: #5B9BD5; }
+        .tag.std-n { background-color: #dc3545; }
+        .tag.std-na { background-color: #6c757d; }
+        .tag.ai { background-color: #6f42c1; color: white; }
+    </style>
+</head>
+<body>
+    <h2>유전체(Genome) 데이터 등록 인터랙티브 가이드 — 염기서열(Nucleotide sequence)</h2>
+    <div class="container">
+
+        <!-- Far-Left Linkage Panel -->
+        <div class="linkage-panel">
+            <h3 style="text-align:center; color:#1F4E78; border-bottom: 2px solid #eee; padding-bottom: 8px; margin-top:0;">데이터 연계 원리</h3>
+            <p style="font-size: 0.8em; color: #555; line-height: 1.4;">KNA(Korea Nucleotide sequence Archive) 공식 가이드(kobic.gitbook.io/kna-documentation) 기준 연계 방식입니다.</p>
+
+            <div class="link-box system">
+                1. BioProject 웹 등록<br>
+                <small style="color:#666;">시스템이 고유 ID 발급</small>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="link-box excel">
+                2. BioSample 등록<br>
+                <small style="color:#666;">Nucleotide/Genome은 <b>1개</b>,<br>MAG/TLS/TSA는 <b>복수</b> 선택 가능</small>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="link-box system">
+                3. 염기서열(KNA) 등록 - Project & Sample 단계<br>
+                <small style="color:#666;">화면 UI에서 <b>BioProject</b> 선택 →<br><b>BioSample(들)</b> 선택 → <b>공개일자</b> 지정</small>
+            </div>
+
+            <hr style="margin: 15px 0; border: 0; border-top: 2px dashed #ccc;">
+
+            <div class="link-box warn">
+                <b>※ KRA(원시데이터) 연계</b><br><br>
+                어셈블리에 사용한 원시데이터가 KRA/NCBI SRA에 있다면,<br>
+                <b>Assemble 단계</b>의<br>
+                <code>[Reference KRA Data]</code> 항목에<br>
+                Run ID를 <b>직접 기재</b>하여 연계합니다.
+            </div>
+
+            <hr style="margin: 15px 0; border: 0; border-top: 2px dashed #ccc;">
+
+            <div class="link-box warn" style="font-size:0.72em; text-align:left; line-height:1.5;">
+                <b>※ 공식 KNA 제출 9단계 (Organism 기준)</b><br>
+                1) Project & Sample<br>
+                2) File Upload<br>
+                3) Affiliation<br>
+                4) Reference<br>
+                5) Assemble<br>
+                6) Nucleotide (Genome·Nucleotide 전용)<br>
+                7) Mapping (MAG 전용)<br>
+                8) Protocol<br>
+                9) Review & Submit
+            </div>
+        </div>
+
+        <!-- Middle: Flow Panel -->
+        <div class="flow-panel">
+            <h3 style="text-align:center; color:#333; border-bottom: 2px solid #eee; padding-bottom: 8px; margin-top:0;">작성 흐름도</h3>
+
+            <div class="datatype-select-box">
+                <label for="genomeDataType">◆ 유전체 데이터 타입 선택 (추후 추가 예정)</label>
+                <select id="genomeDataType" onchange="onDataTypeChange()"></select>
+            </div>
+
+            <div id="btn-gbp" class="node bioproject" onclick="loadView('gbp')">1. BioProject 양식</div>
+
+            <div class="arrow">↓</div>
+
+            <div class="condition">
+                ◆ 분기 1: 생물군 패키지 ◆
+                <div class="condition-desc">
+                    <b>[Key]</b> 상위 <b>BioProject ID</b><br>
+                    <b>[조건]</b> Standard vs MIMS(환경/메타게놈)
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div style="display: flex; gap: 10px; justify-content: space-between;">
+                <div id="btn-gstd" class="node biosample-std" onclick="loadView('gstd')" style="flex: 1; display:flex; align-items:center; justify-content:center; flex-direction:column;">
+                    2-1. BioSample Std
+                </div>
+                <div id="btn-gmims" class="node biosample-mims" onclick="loadView('gmims')" style="flex: 1; display:flex; align-items:center; justify-content:center; flex-direction:column;">
+                    2-2. BioSample MIMS
+                </div>
+            </div>
+
+            <div class="arrow" style="margin-top:5px;">↓</div>
+
+            <div class="condition">
+                ◆ 분기 2: 유전체 데이터 타입 ◆
+                <div class="condition-desc">
+                    <b>[Key]</b> <b>BioSample Name</b> 연계<br>
+                    <b>[조건]</b> 상단 셀렉트박스에서 선택한 타입에 따라 아래 노드가 전환됩니다
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div id="dataTypeNodeSlot"></div>
+        </div>
+
+        <!-- Right: Detail Panel -->
+        <div class="detail-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #1F4E78; padding-bottom:8px; margin-bottom:12px;">
+                <h3 id="view-title" style="color:#1F4E78; margin:0; font-size: 1.1em;">좌측 흐름도에서 단계를 클릭하세요.</h3>
+                <span id="item-count" style="font-weight:bold; color:#ED7D31; font-size: 0.9em;"></span>
+            </div>
+
+            <div id="controls-container" class="controls" style="display:none;"></div>
+
+            <div class="table-container" id="table-container" style="display:none;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="3%">No</th>
+                            <th width="9%">분류 (Part)</th>
+                            <th width="10%">항목명 (Field)</th>
+                            <th width="15%">설명 및 예시</th>
+                            <th width="11%">사용가능값</th>
+                            <th width="5%">필수</th>
+                            <th width="5%">표준화</th>
+                            <th width="14%">표준화 대상/예제</th>
+                            <th width="14%">추출 정보 (방식/URL)</th>
+                            <th width="14%">추출 근거 (이유)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body"></tbody>
+                </table>
+            </div>
+
+            <div id="placeholder" style="height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; color: #6c757d; flex-direction: column;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 10px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                <p style="font-size: 0.9em;">클릭 시 <strong>설명, 예시, 사용가능값, 필수여부, 표준화 방안, AI 추출방식/근거</strong>가 모두 표출됩니다.<br>상단 드롭다운(제출타입 / Genome Mapping타입) 값에 따라 항목이 동적으로 활성/비활성 처리됩니다.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const GENOME_DATA_TYPES = [
+            { value: 'nuc', label: '염기서열 (Nucleotide sequence)', nodeClass: 'nucseq' },
+            // 추가 예시(주석 처리): { value: 'variant', label: '유전체 변이(Variant call)', nodeClass: 'nucseq' },
+        ];
+
+        function renderDataTypeUI() {
+            const sel = document.getElementById('genomeDataType');
+            sel.innerHTML = GENOME_DATA_TYPES.map(t => `<option value="${t.value}">${t.label}</option>`).join('');
+            const slot = document.getElementById('dataTypeNodeSlot');
+            slot.innerHTML = GENOME_DATA_TYPES.map(t =>
+                `<div id="btn-${t.value}" class="node ${t.nodeClass}" onclick="loadView('${t.value}')">3. ${t.label}</div>`
+            ).join('') + `<div class="node future-slot">+ 추후 다른 유전체 데이터 타입이 여기 추가됩니다</div>`;
+        }
+        function onDataTypeChange() { loadView(document.getElementById('genomeDataType').value); }
+
+        const db = {
+            'gbp': {
+                title: '1. BioProject 양식 (요약 — 공통 양식, 기능유전체 가이드와 동일)',
+                controls: [],
+                items: [
+                    {"part":"공통","field":"BioProject 등록","req":"M","desc":"등록자정보/프로젝트 정보 등 전체 항목은 K-BDS 공통 BioProject 양식과 동일. 염기서열 등록 전 선행 등록 필요.","allowed":"[별도 BioProject 양식 참고]","std":"불필요","target":"-","extract":"-","reason":"-","condition":"true"}
+                ]
+            },
+            'gstd': {
+                title: '2-1. BioSample Standard 양식 (요약 — 공통 양식)',
+                controls: [],
+                items: [
+                    {"part":"공통","field":"BioSample Std 등록","req":"M","desc":"생물군 패키지별 표준 속성 작성. K-BDS 공통 BioSample Std 양식과 동일. Nucleotide/Genome은 BioSample 1개만 선택.","allowed":"[별도 BioSample 양식 참고]","std":"불필요","target":"-","extract":"-","reason":"-","condition":"true"}
+                ]
+            },
+            'gmims': {
+                title: '2-2. BioSample MIMS 양식 (요약 — 공통 양식)',
+                controls: [],
+                items: [
+                    {"part":"공통","field":"BioSample MIMS 등록","req":"M","desc":"환경/메타게놈 패키지별 MIMS 속성 작성. K-BDS 공통 BioSample MIMS 양식과 동일. MAG는 반드시 MIMS 패키지 사용.","allowed":"[별도 BioSample 양식 참고]","std":"불필요","target":"-","extract":"-","reason":"-","condition":"true"}
+                ]
+            },
+            'nuc': {
+                title: '3. 염기서열(Nucleotide sequence) 양식 — 전체 117개 항목 (KNA 공식 9단계 흐름 기준)',
+                controls: [
+                    { id: 'nuc_pkg', label: '제출 타입 선택', options: ['Nucleotide','Genome','MAG','TLS','TSA','Synthetic_Construct','PCR_primer'] },
+                    { id: 'nuc_gmap', label: 'Genome Mapping 타입 (Genome 전용)', options: ['Chromosome','Organelle','Plasmid'] }
+                ],
+                items: [{"part": "Step3. Affiliation", "field": "Name of submitter’s organization", "desc": "등록자소속기관의영문명", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "true", "req": "M"}, {"part": "Step3. Affiliation", "field": "Department of submitter", "desc": "등록자소속학과/부서의영문명", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "true", "req": "M"}, {"part": "Step3. Affiliation", "field": "Country of submitter", "desc": "Country of submitter", "allowed": "[국가명 자유기재]", "std": "가능", "target": "ISO 3166-1 alpha-2/3", "extract": "ISO 3166-1 국가코드 DB 매칭", "reason": "국가명 표기에 대한 국제 표준 규격(ISO) 준수 및 오탈 방지", "condition": "true", "req": "M"}, {"part": "Step3. Affiliation", "field": "Street address", "desc": "등록자소속기관의도로명주소. 영문주소는 https://www.kraddress.com/에서해당기관의한글주소를검색하여확인가능", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "true", "req": "M"}, {"part": "Step3. Affiliation", "field": "City", "desc": "등록자소속기관이위치한도시(구·군등)의명칭. 영문주소는 https://www.kraddress.com/에서해당기관의한글주소를…", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "true", "req": "M"}, {"part": "Step3. Affiliation", "field": "State/Province/Regio n", "desc": "등록자소속기관이위치한시·도또는지역명. 영문주소는 https://www.kraddress.com/에서해당기관의한글주소를검색하…", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "true", "req": "O"}, {"part": "Step3. Affiliation", "field": "Zip code (postal code)", "desc": "등록자소속기관의우편번호.", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "true", "req": "M"}, {"part": "Step3. Affiliation", "field": "Contact person information", "desc": "등록자대신연락가능한실무자의연락정보", "allowed": "[이름, 이메일, 전화번호]", "std": "불가능", "target": "-", "extract": "-", "reason": "-", "condition": "true", "req": "M"}, {"part": "Step3. Affiliation", "field": "Release date", "desc": "데이터공개날짜 포맷: YYYY-MM-DD", "allowed": "YYYY-MM-DD", "std": "가능", "target": "ISO 8601", "extract": "날짜 파싱 (Date Format Validation)", "reason": "날짜/시간 표기에 대한 국제 표준 규격(YYYY-MM-DD) 준수 확인", "condition": "true", "req": "M"}, {"part": "Step2. File Upload", "field": "Sequence file", "desc": "염기서열정보를담고있는파일로, fasta 확장자의FASTA 파일을 제출해야함. 각서열은“>” 기호로시작하는서열이름(ID)과그…", "allowed": "[파일 업로드]", "std": "불필요", "target": "-", "extract": "-", "reason": "-", "condition": "true", "reqMap": {"Nucleotide": "M", "Genome": "M", "MAG": "M", "TLS": "M", "TSA": "M", "Synthetic_Construct": "M", "PCR_primer": "-"}}, {"part": "Step2. File Upload", "field": "Annotation file", "desc": "유전자주석정보를담고있는파일로, 일반적으로gff 형식의파일을 제출해야함. 해당파일에는유전자의구조, 기능, 위치등과같은메타데이…", "allowed": "[파일 업로드]", "std": "불필요", "target": "-", "extract": "-", "reason": "-", "condition": "true", "reqMap": {"Nucleotide": "M", "Genome": "M", "MAG": "M", "TLS": "M", "TSA": "M", "Synthetic_Construct": "M", "PCR_primer": "-"}}, {"part": "Step2. File Upload", "field": "Others", "desc": "염기서열및주석파일이외의서열관련추가파일을제출함. 품질 지표, 참고자료등제출된서열을보완하는다양한부가정보를담을수있음.", "allowed": "[파일 업로드]", "std": "불필요", "target": "-", "extract": "-", "reason": "-", "condition": "true", "reqMap": {"Nucleotide": "O", "Genome": "O", "MAG": "O", "TLS": "O", "TSA": "O", "Synthetic_Construct": "O", "PCR_primer": "-"}}, {"part": "Step4. Reference", "field": "Publication status", "desc": "논문의게재여부를선택", "allowed": ["Published", "Unpublished"], "std": "가능", "target": "Controlled Vocabulary (K-BDS 내부)", "extract": "K-BDS 시스템 내부 CV 테이블 대조", "reason": "시스템이 지정한 제어 어휘(CV) 목록 내에서만 정확한 텍스트로 입력되도록 제한", "condition": "true", "req": "M"}, {"part": "Step4. Reference", "field": "Reference title", "desc": "게재예정인논문제목혹은프로젝트의제목입력", "allowed": "[자유 기재 → NER 추출]", "std": "가능", "target": "PubMed/CrossRef", "extract": "PubMed API (eutils.ncbi.nlm.nih.gov) 연동", "reason": "NCBI PubMed 또는 DOI 시스템의 실제 출판물 데이터와 연동 및 검증", "condition": "true", "req": "G"}, {"part": "Step4. Reference", "field": "Publication", "desc": "이프로젝트수행의결과로산출된논문의PubMed ID를입력. PubMed가없을경우DOI(Digital Object Identif…", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "true", "req": "G"}, {"part": "Step4. Reference", "field": "Confirm update of existing submission", "desc": "기존의KNA 데이터를업데이트할것인지를선택", "allowed": ["Yes", "No"], "std": "가능", "target": "Boolean (Y/N)", "extract": "Y/N 문자열 매칭", "reason": "참/거짓(Yes/No) 두 가지 상태값으로만 통일하여 논리 연산 오류 방지", "condition": "true", "req": "M"}, {"part": "Step4. Reference", "field": "Existing KNA Accession ID", "desc": "업데이트할KNA 데이터ID를입력", "allowed": "[식별자 형식]", "std": "가능", "target": "K-BDS KNA Accession Format", "extract": "K-BDS 내부 Accession DB 조회", "reason": "K-BDS 시스템에 사전 등록된 고유 식별자와의 참조 무결성 확인", "condition": "true", "req": "G"}, {"part": "Step4. Reference", "field": "Sequence authors", "desc": "시퀀스저자이름을입력 세부항목 M/ O 도움말 First Name (시퀀스저자의 이름) M | 시퀀스저자의이름입력 | 시퀀스…", "allowed": "[자유 기재 → NER 추출]", "std": "가능", "target": "ORCID", "extract": "ORCID API 조회", "reason": "저자 식별의 국제 표준 레지스트리(ORCID)와의 대조를 통한 동명이인 방지", "condition": "true", "req": "M"}, {"part": "Step4. Reference", "field": "First Name", "desc": "시퀀스 저자의 이름 입력", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "true", "req": "M"}, {"part": "Step4. Reference", "field": "Last Name", "desc": "시퀀스 저자의 성 입력", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "true", "req": "M"}, {"part": "Step4. Reference", "field": "Middle Initial(s)", "desc": "시퀀스 저자의 중간 이름 약어 입력", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "true", "req": "M"}, {"part": "Step1. Project & Sample", "field": "Sample name", "desc": "연구자가샘플에대해부여한이름, 사전에등록된BioSample 중, 해당샘플의 이름또는BioSample 등록번호를선택", "allowed": "[BioSample 연계]", "std": "가능", "target": "BioSample Name 연계", "extract": "DB 내부 Foreign Key 조회", "reason": "동일 데이터셋 내 등록된 BioSample 테이블과의 PK/FK 식별자 직접 연결", "condition": "true", "reqMap": {"Nucleotide": "M", "Genome": "M", "MAG": "M", "TLS": "M", "TSA": "M", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "Confirm full genome", "desc": "제출할서열이게놈의모든부분(원핵생물의경우, 플라스미드는포함되지않을 수있음)을포함하는지, 또는일부만(특정염색체나주요영역만) 포…", "allowed": ["Yes", "No"], "std": "가능", "target": "Boolean (Y/N)", "extract": "Y/N 문자열 매칭", "reason": "참/거짓(Yes/No) 두 가지 상태값으로만 통일하여 논리 연산 오류 방지", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "M", "MAG": "-", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "Description for subset of the genome", "desc": "제출하려는게놈의일부분이무엇인지기술", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "G", "MAG": "-", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "Assembly state", "desc": "게놈어셈블리의상태선택", "allowed": ["Single sequence per chromosome (gap 없음)", "여러 조각/미조립 서열 존재"], "std": "가능", "target": "Controlled Vocabulary (K-BDS 내부)", "extract": "K-BDS 시스템 내부 CV 테이블 대조", "reason": "시스템이 지정한 제어 어휘(CV) 목록 내에서만 정확한 텍스트로 입력되도록 제한", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "M", "MAG": "-", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "Assembly level", "desc": "게놈어셈블리의완성도선택", "allowed": ["Complete Genome", "Chromosome", "Scaffold", "Contig"], "std": "가능", "target": "NCBI Genome Assembly Metadata (K-BDS 원문보존 방침)", "extract": "K-BDS 시스템 내부 CV 테이블 대조", "reason": "NCBI 공식 assembly_level 통제어휘와 대응되나, K-BDS는 원문 보존 정책을 적용 중", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "M", "MAG": "M", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "Genome Mapping table", "desc": "아래의매핑표정보를참고하여작성한게놈매핑표를업로드", "allowed": "[파일 업로드]", "std": "불필요", "target": "-", "extract": "-", "reason": "-", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "G", "MAG": "-", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "MAG Mapping table", "desc": "아래의매핑표정보를참고하여작성한MAG 매핑표를업로드", "allowed": "[파일 업로드]", "std": "불필요", "target": "-", "extract": "-", "reason": "-", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "-", "MAG": "G", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "Confirm de novo assembly", "desc": "제출하려는게놈서열이참조서열없이새롭게조립(de novo assembly)된 것인지아닌지를선택", "allowed": ["Yes", "No"], "std": "가능", "target": "Boolean (Y/N)", "extract": "Y/N 문자열 매칭", "reason": "참/거짓(Yes/No) 두 가지 상태값으로만 통일하여 논리 연산 오류 방지", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "M", "MAG": "M", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "Reference assembly accession ID", "desc": "참조서열로사용한accession ID를입력", "allowed": "[식별자 형식]", "std": "가능", "target": "NCBI Assembly Accession (GCA/GCF)", "extract": "NCBI Assembly API 형식 검증", "reason": "NCBI 공식 Assembly Accession 형식 규격 준수 확인", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "G", "MAG": "G", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "Confirm final version", "desc": "해당게놈에대한추가시퀀싱또는재조립계획이없는경우, “Yes” 선택", "allowed": ["Yes", "No"], "std": "가능", "target": "Boolean (Y/N)", "extract": "Y/N 문자열 매칭", "reason": "참/거짓(Yes/No) 두 가지 상태값으로만 통일하여 논리 연산 오류 방지", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "M", "MAG": "M", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "Locus Tag Prefix", "desc": "Annotation 파일제작시등록하고싶은Locus Tag 접두사입력. 입력하지않을 시자동적으로Accession Prefix…", "allowed": "[자유 기재 → NER 추출]", "std": "가능", "target": "NCBI Locus Tag Prefix Registry", "extract": "NCBI 내부 접두사 레지스트리 조회", "reason": "동일 접두사의 중복 등록 여부를 국제 등록기관 기준으로 사전 검증", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "O", "MAG": "O", "TLS": "-", "TSA": "O", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "Cultured status", "desc": "데이터가배양된샘플에서얻어진것인지, 비배양샘플에서얻어진것인지 선택", "allowed": ["Cultured", "Uncultured"], "std": "가능", "target": "Controlled Vocabulary (K-BDS 내부)", "extract": "K-BDS 시스템 내부 CV 테이블 대조", "reason": "시스템이 지정한 제어 어휘(CV) 목록 내에서만 정확한 텍스트로 입력되도록 제한", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "-", "MAG": "-", "TLS": "M", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "TLS Mapping table", "desc": "아래의매핑표정보를참고하여작성한TLS 매핑표를작성", "allowed": "[파일 업로드]", "std": "불필요", "target": "-", "extract": "-", "reason": "-", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "-", "MAG": "-", "TLS": "G", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "Primer type", "desc": "타겟증폭에사용한프라이머유형을선택", "allowed": ["Universal primers", "Species-specific primers", "Not amplified with primers"], "std": "가능", "target": "Controlled Vocabulary (K-BDS 내부)", "extract": "K-BDS 시스템 내부 CV 테이블 대조", "reason": "시스템이 지정한 제어 어휘(CV) 목록 내에서만 정확한 텍스트로 입력되도록 제한", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "-", "MAG": "-", "TLS": "G", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "Targeted locus set name", "desc": "타겟위치셋의이름선택", "allowed": ["16S rRNA", "23S rRNA", "16-23S rRNA", "Nuclear rRNA/ITS", "Mito/chloroplast rRNA", "Mito cox1", "Nuclear mRNA", "Any other"], "std": "가능", "target": "Controlled Vocabulary (K-BDS 내부)", "extract": "K-BDS 시스템 내부 CV 테이블 대조", "reason": "시스템이 지정한 제어 어휘(CV) 목록 내에서만 정확한 텍스트로 입력되도록 제한", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "-", "MAG": "-", "TLS": "G", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "Targeted locus set name (free-text)", "desc": "시퀀싱에사용된타겟로커스세트의이름을입력합니다. 시중세트(UCEs, Angiosperms-353 등)는해당이름을, 직접제작한세…", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "-", "MAG": "-", "TLS": "G", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "KRA Run ID (KRA Run ID)", "desc": "어셈블리에사용한원시데이터가KRA에등록된경우, 해당Run ID 입력. 복수 입력가능", "allowed": "[식별자 형식]", "std": "가능", "target": "K-BDS KRA Accession Format", "extract": "K-BDS 내부 Accession DB 조회", "reason": "K-BDS 시스템에 사전 등록된 고유 식별자와의 참조 무결성 확인", "condition": "true", "reqMap": {"Nucleotide": "O", "Genome": "O", "MAG": "M", "TLS": "O", "TSA": "O", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "NCBI SRA Run ID (NCBI SRA Run ID)", "desc": "어셈블리에사용한원시데이터가SRA에등록된경우, 해당RUN ID 입력. 복수입력가능", "allowed": "[식별자 형식]", "std": "가능", "target": "NCBI SRA Run Accession Format (SRRxxxxxxx)", "extract": "NCBI SRA API 형식 검증", "reason": "NCBI SRA 공식 Run Accession 형식 규격 준수 확인", "condition": "true", "reqMap": {"Nucleotide": "O", "Genome": "O", "MAG": "O", "TLS": "O", "TSA": "O", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "Platform", "desc": "어셈블리에사용된원시데이터를생성한플랫폼을입력. 복수선택가능", "allowed": ["ABI_SOLID", "BGISEQ", "CAPILLARY", "COMPLETE_GENOMICS", "DNBSEQ", "ELEMENT", "GENAPSYS", "GENEMIND", "HELICOS", "ILLUMINA", "ION_TORRENT", "LS454", "OXFORD_NANOPORE", "PACBIO_SMRT", "TAPESTRI", "ULTIMA", "VELA_DIAGNOSTICS", "unspecified"], "std": "가능", "target": "INSDC SRA/DRA Controlled Vocabulary", "extract": "NCBI SRA/INSDC XML Schema CV 테이블 대조", "reason": "국제 염기서열 DB 협력체(INSDC)의 글로벌 호환 데이터 규격 준수", "condition": "true", "reqMap": {"Nucleotide": "M", "Genome": "M", "MAG": "M", "TLS": "M", "TSA": "M", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "Instrument model", "desc": "어셈블리에사용된원시데이터를생성한기기모델을입력", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "true", "reqMap": {"Nucleotide": "M", "Genome": "M", "MAG": "M", "TLS": "M", "TSA": "M", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "Genome coverage", "desc": "어셈블리에사용된원시데이터의게놈커버리지", "allowed": "[숫자]", "std": "불필요", "target": "-", "extract": "Float/Int 형변환 및 숫자 파싱", "reason": "텍스트가 아닌 연산 가능한 숫자형(Numeric) 데이터 타입 확인", "condition": "true", "reqMap": {"Nucleotide": "M", "Genome": "M", "MAG": "-", "TLS": "-", "TSA": "M", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "Assembly date", "desc": "어셈블리데이터가생성된년도, 월, 일 포맷: YYYY-MM-DD", "allowed": "YYYY-MM-DD", "std": "가능", "target": "ISO 8601", "extract": "날짜 파싱 (Date Format Validation)", "reason": "날짜/시간 표기에 대한 국제 표준 규격(YYYY-MM-DD) 준수 확인", "condition": "true", "reqMap": {"Nucleotide": "O", "Genome": "O", "MAG": "O", "TLS": "O", "TSA": "O", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "Program", "desc": "어셈블리에활용한프로그램의이름", "allowed": "[자유 기재 → NER 추출]", "std": "가능", "target": "EDAM ontology + bio.tools registry", "extract": "bio.tools API / EDAM 온톨로지 매칭", "reason": "생물정보학 소프트웨어 명칭을 국제 도구 레지스트리(bio.tools) 기준으로 표준화", "condition": "true", "reqMap": {"Nucleotide": "M", "Genome": "M", "MAG": "M", "TLS": "M", "TSA": "M", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "Program Version or Run Date", "desc": "어셈블리에활용한프로그램의버전혹은실행날짜", "allowed": "YYYY-MM-DD", "std": "가능", "target": "ISO 8601", "extract": "날짜 파싱 (Date Format Validation)", "reason": "날짜/시간 표기에 대한 국제 표준 규격(YYYY-MM-DD) 준수 확인", "condition": "true", "reqMap": {"Nucleotide": "M", "Genome": "M", "MAG": "M", "TLS": "M", "TSA": "M", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "Haplotype phasing method", "desc": "알고리즘, 분석도구등Haplotype phasing에사용한방법입력", "allowed": "[자유 기재 → NER 추출]", "std": "가능", "target": "EDAM ontology (topic:Phasing)", "extract": "EDAM 온톨로지 검색 매칭", "reason": "방법론 용어를 생물정보학 온톨로지(EDAM) 개념에 매핑, 실패 시 원문 보존", "condition": "true", "reqMap": {"Nucleotide": "O", "Genome": "O", "MAG": "-", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble", "field": "Assembly name", "desc": "이필드는일반적으로특히원핵생물의경우비워두지만, 이어셈블리를 설명하기위해원고나초록에서사용하는이름으로사용가능", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "true", "reqMap": {"Nucleotide": "O", "Genome": "O", "MAG": "O", "TLS": "O", "TSA": "O", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Sequence ID", "desc": "FASTA 파일에서“>” 기호로시작하는줄(헤더)에포함된서열의 식별자(이름)", "allowed": "[파일 업로드]", "std": "불필요", "target": "-", "extract": "-", "reason": "-", "condition": "val('nuc_pkg')==='Genome' && val('nuc_gmap')==='Chromosome'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Chromosome name", "desc": "염색체이름", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "val('nuc_pkg')==='Genome' && val('nuc_gmap')==='Chromosome'", "req": "O"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Haplotype number", "desc": "Phasing을통해Haplotype이나뉘어졌다면, 각Haplotype을구분하여 작성 4 Topology (위상) M", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "val('nuc_pkg')==='Genome' && val('nuc_gmap')==='Chromosome'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Topology", "desc": "Topology", "allowed": ["Linear", "Circular", "Other"], "std": "가능", "target": "INSDC SRA/DRA Controlled Vocabulary", "extract": "NCBI SRA/INSDC XML Schema CV 테이블 대조", "reason": "국제 염기서열 DB 협력체(INSDC)의 글로벌 호환 데이터 규격 준수", "condition": "val('nuc_pkg')==='Genome' && val('nuc_gmap')==='Chromosome'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Confirm complete chromosome", "desc": "해당시퀀스가염색체전체를포함한완전한염색체서열인지선택", "allowed": ["Complete", "Partial"], "std": "가능", "target": "Controlled Vocabulary (K-BDS 내부)", "extract": "K-BDS 시스템 내부 CV 테이블 대조", "reason": "시스템이 지정한 제어 어휘(CV) 목록 내에서만 정확한 텍스트로 입력되도록 제한", "condition": "val('nuc_pkg')==='Genome' && val('nuc_gmap')==='Chromosome'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Sequence ID", "desc": "FASTA 파일에서“>” 기호로시작하는줄(헤더)에포함된서열의 식별자(이름)", "allowed": "[파일 업로드]", "std": "불필요", "target": "-", "extract": "-", "reason": "-", "condition": "val('nuc_pkg')==='Genome' && val('nuc_gmap')==='Organelle'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Organelle information", "desc": "소기관이름입력 4 Topology (위상) M", "allowed": ["mitochondrion", "mitochondrion:kinetoplast", "plastid", "plastid:chloroplast", "plastid:apicoplast", "plastid:chromoplast", "plastid:cyanelle", "plastid:leucoplast", "plastid:protoplastid", "nucleomorph", "proviral", "extrachromosomal", "macronuclear"], "std": "가능", "target": "INSDC SRA/DRA Controlled Vocabulary", "extract": "NCBI SRA/INSDC XML Schema CV 테이블 대조", "reason": "국제 염기서열 DB 협력체(INSDC)의 글로벌 호환 데이터 규격 준수", "condition": "val('nuc_pkg')==='Genome' && val('nuc_gmap')==='Organelle'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Organelle name", "desc": "소기관이름입력 4 Topology (위상) M", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "val('nuc_pkg')==='Genome' && val('nuc_gmap')==='Organelle'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Topology", "desc": "Topology", "allowed": ["Linear", "Circular", "Other"], "std": "가능", "target": "INSDC SRA/DRA Controlled Vocabulary", "extract": "NCBI SRA/INSDC XML Schema CV 테이블 대조", "reason": "국제 염기서열 DB 협력체(INSDC)의 글로벌 호환 데이터 규격 준수", "condition": "val('nuc_pkg')==='Genome' && val('nuc_gmap')==='Organelle'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Status", "desc": "해당시퀀스가해당소기관염색체의전체정보를포함하고있는지 선택", "allowed": ["Complete", "Partial"], "std": "가능", "target": "Controlled Vocabulary (K-BDS 내부)", "extract": "K-BDS 시스템 내부 CV 테이블 대조", "reason": "시스템이 지정한 제어 어휘(CV) 목록 내에서만 정확한 텍스트로 입력되도록 제한", "condition": "val('nuc_pkg')==='Genome' && val('nuc_gmap')==='Organelle'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Sequence ID", "desc": "FASTA 파일에서“>” 기호로시작하는줄(헤더)에포함된서열의 식별자(이름)", "allowed": "[파일 업로드]", "std": "불필요", "target": "-", "extract": "-", "reason": "-", "condition": "val('nuc_pkg')==='Genome' && val('nuc_gmap')==='Plasmid'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Plasmid name", "desc": "플라스미드이름입력 3 Topology (위상) M", "allowed": "[자유 기재 → NER 추출]", "std": "가능", "target": "Addgene / NCBI", "extract": "Addgene API 조회", "reason": "합성 플라스미드 명칭의 공개 리포지토리(Addgene) 등재 여부 확인", "condition": "val('nuc_pkg')==='Genome' && val('nuc_gmap')==='Plasmid'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Topology", "desc": "Topology", "allowed": ["Linear", "Circular", "Other"], "std": "가능", "target": "INSDC SRA/DRA Controlled Vocabulary", "extract": "NCBI SRA/INSDC XML Schema CV 테이블 대조", "reason": "국제 염기서열 DB 협력체(INSDC)의 글로벌 호환 데이터 규격 준수", "condition": "val('nuc_pkg')==='Genome' && val('nuc_gmap')==='Plasmid'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Status", "desc": "해당시퀀스가해당소기관플라스미드의전체정보를포함하고 있는지선택", "allowed": ["Complete", "Partial"], "std": "가능", "target": "Controlled Vocabulary (K-BDS 내부)", "extract": "K-BDS 시스템 내부 CV 테이블 대조", "reason": "시스템이 지정한 제어 어휘(CV) 목록 내에서만 정확한 텍스트로 입력되도록 제한", "condition": "val('nuc_pkg')==='Genome' && val('nuc_gmap')==='Plasmid'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Sequence file", "desc": "Fasta 형식의시퀀스파일이름입력", "allowed": "[파일 업로드]", "std": "불필요", "target": "-", "extract": "-", "reason": "-", "condition": "val('nuc_pkg')==='MAG'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Annotation file", "desc": "시퀀스주석파일이름입력", "allowed": "[파일 업로드]", "std": "불필요", "target": "-", "extract": "-", "reason": "-", "condition": "val('nuc_pkg')==='MAG'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Bin number", "desc": "비닝과정에서부여된번호", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "val('nuc_pkg')==='MAG'", "req": "O"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Completeness score", "desc": "평가과정에서도출된최종완전도점수", "allowed": "[0-100 숫자]", "std": "가능", "target": "GSC MIMAG Guideline (Bowers et al. 2017)", "extract": "Float/Int 형변환 및 숫자 파싱", "reason": "텍스트가 아닌 연산 가능한 숫자형(Numeric) 데이터로 정확히 기재되었는지 확인, 품질등급(MIMAG) 기준 대조", "condition": "val('nuc_pkg')==='MAG'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Contamination score", "desc": "평가과정에서도출된최종오염도점수", "allowed": "[0-100 숫자]", "std": "가능", "target": "GSC MIMAG Guideline (Bowers et al. 2017)", "extract": "Float/Int 형변환 및 숫자 파싱", "reason": "텍스트가 아닌 연산 가능한 숫자형(Numeric) 데이터로 정확히 기재되었는지 확인, 품질등급(MIMAG) 기준 대조", "condition": "val('nuc_pkg')==='MAG'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Taxonomy classification", "desc": "Taxonomic classification 결과로도출된분류정보로, 해당생물의 학명과계층(level)을포함", "allowed": "[학명 또는 Taxon ID]", "std": "가능", "target": "NCBI Taxonomy (NCBITaxon)", "extract": "NCBI Taxonomy API 매칭", "reason": "생물 분류군에 대한 국제 공식 표준 온톨로지(NCBI Taxonomy) 매핑 적용", "condition": "val('nuc_pkg')==='MAG'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "NCBI taxonomy ID", "desc": "해당생물분류군의고유한NCBI 분류ID 입력", "allowed": "[학명 또는 Taxon ID]", "std": "가능", "target": "NCBI Taxonomy (NCBITaxon)", "extract": "NCBI Taxonomy API 매칭", "reason": "생물 분류군에 대한 국제 공식 표준 온톨로지(NCBI Taxonomy) 매핑 적용", "condition": "val('nuc_pkg')==='MAG'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Sample name", "desc": "샘플의이름입력", "allowed": "[BioSample 연계]", "std": "가능", "target": "BioSample Name 연계", "extract": "DB 내부 Foreign Key 조회", "reason": "동일 데이터셋 내 등록된 BioSample 테이블과의 PK/FK 식별자 직접 연결", "condition": "val('nuc_pkg')==='TLS'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Sequence file", "desc": "Fasta 형식의시퀀스파일이름입력", "allowed": "[파일 업로드]", "std": "불필요", "target": "-", "extract": "-", "reason": "-", "condition": "val('nuc_pkg')==='TLS'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Annotation file", "desc": "시퀀스주석파일이름입력", "allowed": "[파일 업로드]", "std": "불필요", "target": "-", "extract": "-", "reason": "-", "condition": "val('nuc_pkg')==='TLS'", "req": "O"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Molecule Type", "desc": "분리및시퀀싱된분자의유형", "allowed": ["genomic DNA", "genomic RNA", "viral cRNA", "mRNA (cDNA)", "tRNA", "rRNA", "transcribed RNA", "precursor RNA", "unassigned DNA", "unassigned RNA", "Other DNA", "Other RNA"], "std": "가능", "target": "INSDC SRA/DRA Controlled Vocabulary", "extract": "NCBI SRA/INSDC XML Schema CV 테이블 대조", "reason": "국제 염기서열 DB 협력체(INSDC)의 글로벌 호환 데이터 규격 준수", "condition": "val('nuc_pkg')==='Nucleotide'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Topology", "desc": "Topology", "allowed": ["Linear", "Circular", "Other"], "std": "가능", "target": "INSDC SRA/DRA Controlled Vocabulary", "extract": "NCBI SRA/INSDC XML Schema CV 테이블 대조", "reason": "국제 염기서열 DB 협력체(INSDC)의 글로벌 호환 데이터 규격 준수", "condition": "val('nuc_pkg')==='Nucleotide' || val('nuc_pkg')==='Synthetic_Construct'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Organelle/Location information", "desc": "소기관또는서열의위치정보입력", "allowed": ["chromosomal", "viral", "mitochondrion", "mitochondrion:kinetoplast", "plastid", "plastid:chloroplast", "plastid:apicoplast", "plastid:chromoplast", "plastid:cyanelle", "plastid:leucoplast", "plastid:protoplastid", "nucleomorph", "proviral", "extrachromosomal", "macronuclear", "plasmid", "Others"], "std": "가능", "target": "INSDC SRA/DRA Controlled Vocabulary", "extract": "NCBI SRA/INSDC XML Schema CV 테이블 대조", "reason": "국제 염기서열 DB 협력체(INSDC)의 글로벌 호환 데이터 규격 준수", "condition": "val('nuc_pkg')==='Nucleotide'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Status", "desc": "해당시퀀스가제출물이완전한생물학적단위(예: an organelle genome, virus, viral segment, vi…", "allowed": ["Complete", "Partial"], "std": "가능", "target": "Controlled Vocabulary (K-BDS 내부)", "extract": "K-BDS 시스템 내부 CV 테이블 대조", "reason": "시스템이 지정한 제어 어휘(CV) 목록 내에서만 정확한 텍스트로 입력되도록 제한", "condition": "val('nuc_pkg')==='Nucleotide'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Presence of feature information", "desc": "Feature 정보의유무를선택", "allowed": ["Yes", "No"], "std": "가능", "target": "Boolean (Y/N)", "extract": "Y/N 문자열 매칭", "reason": "참/거짓(Yes/No) 두 가지 상태값으로만 통일하여 논리 연산 오류 방지", "condition": "val('nuc_pkg')==='Nucleotide' || val('nuc_pkg')==='Synthetic_Construct'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Feature Information", "desc": "아래의Feature 정보를참고하여입력", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "val('nuc_pkg')==='Nucleotide' || val('nuc_pkg')==='Synthetic_Construct'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Sequence source (Backbone)", "desc": "서열을설계하거나제작할때참고한출처정보(예: 인공서열의경우 플라스미드·벡터, 프라이머의경우원본생물종). 직접설계한백본(Vect…", "allowed": "[자유 기재 → NER 추출]", "std": "가능", "target": "Addgene vector database", "extract": "Addgene API 조회", "reason": "백본 벡터 명칭의 공개 리포지토리 등재 여부 확인", "condition": "val('nuc_pkg')==='Synthetic_Construct' || val('nuc_pkg')==='PCR_primer'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Sequence organism information (Taxonomy ID)", "desc": "프라이머를제작에사용된원본서열의생물종Taxonomy ID", "allowed": "[학명 또는 Taxon ID]", "std": "가능", "target": "NCBI Taxonomy (NCBITaxon)", "extract": "NCBI Taxonomy API 매칭", "reason": "생물 분류군에 대한 국제 공식 표준 온톨로지(NCBI Taxonomy) 매핑 적용", "condition": "val('nuc_pkg')==='PCR_primer'", "req": "O"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Sequence source Accession (addgene or NCBI or KNA Accession)", "desc": "서열제작에참고한출처의Accession 번호 예시1: addgene: 52961, NCBI: OR783464 (for Syn…", "allowed": "[식별자 형식]", "std": "가능", "target": "K-BDS KNA Accession Format", "extract": "K-BDS 내부 Accession DB 조회", "reason": "K-BDS 시스템에 사전 등록된 고유 식별자와의 참조 무결성 확인", "condition": "val('nuc_pkg')==='Synthetic_Construct' || val('nuc_pkg')==='PCR_primer'", "req": "O"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Target", "desc": "해당서열의타겟(인공서열또는프라이머) 예시1: IGF_CDP1, Mus musculus (for Synthetic const…", "allowed": "[자유 기재 → NER 추출]", "std": "가능", "target": "NCBI Gene", "extract": "NCBI Gene API 조회", "reason": "유전자/타겟 명칭을 NCBI Gene 공식 식별자와 대조", "condition": "val('nuc_pkg')==='Synthetic_Construct' || val('nuc_pkg')==='PCR_primer'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Name", "desc": "서열의이름 예시1: pET28a_IGF_CDP1, 17_6_7 (for Synthetic construct) 예시2: HP…", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "val('nuc_pkg')==='Synthetic_Construct' || val('nuc_pkg')==='PCR_primer'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Purpose", "desc": "서열의목적 예시1: Production of IGF_CDP1, Coagulation (for Synthetic constr…", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "val('nuc_pkg')==='Synthetic_Construct' || val('nuc_pkg')==='PCR_primer'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Description", "desc": "서열의설명 예시1: Plasmid created by inserting IGF_CDP1 into pET-28a(+) vec…", "allowed": "[자유 기재 → NER 추출]", "std": "가능", "target": "NCBI Gene / NCBI Taxonomy", "extract": "NER 개체명 인식 후 NCBI API 매칭", "reason": "설명문 내 유전자·생물종 개체명을 추출해 공식 데이터베이스와 대조", "condition": "val('nuc_pkg')==='Synthetic_Construct' || val('nuc_pkg')==='PCR_primer'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Forward primer sequence", "desc": "포워드프라이머의염기서열", "allowed": "[ATGC 서열]", "std": "가능", "target": "IUPAC Nucleotide Code", "extract": "서열 문자열 패턴 검증(ATGC)", "reason": "표준 염기서열 알파벳(IUPAC) 규격 준수 확인", "condition": "val('nuc_pkg')==='PCR_primer'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Reverse primer sequence", "desc": "리버스프라이머의염기서열", "allowed": "[ATGC 서열]", "std": "가능", "target": "IUPAC Nucleotide Code", "extract": "서열 문자열 패턴 검증(ATGC)", "reason": "표준 염기서열 알파벳(IUPAC) 규격 준수 확인", "condition": "val('nuc_pkg')==='PCR_primer'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Expected amplification length", "desc": "이프라이머를사용하여증폭을시켰을경우예상되는길이", "allowed": "[정수, bp]", "std": "불필요", "target": "-", "extract": "Float/Int 형변환 및 숫자 파싱", "reason": "텍스트가 아닌 연산 가능한 숫자형(Numeric) 데이터 타입 확인", "condition": "val('nuc_pkg')==='PCR_primer'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Feature Description", "desc": "feature 정보에대해자유롭게작성", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "val('nuc_pkg')==='Nucleotide' || val('nuc_pkg')==='Synthetic_Construct'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Strand", "desc": "feature가발견된가닥(plus 또는minus)", "allowed": ["+", "-"], "std": "가능", "target": "INSDC SRA/DRA Controlled Vocabulary", "extract": "NCBI SRA/INSDC XML Schema CV 테이블 대조", "reason": "국제 염기서열 DB 협력체(INSDC)의 글로벌 호환 데이터 규격 준수", "condition": "val('nuc_pkg')==='Nucleotide' || val('nuc_pkg')==='Synthetic_Construct'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Status", "desc": "Feature가완전성여부", "allowed": ["Complete", "Partial"], "std": "가능", "target": "Controlled Vocabulary (K-BDS 내부)", "extract": "K-BDS 시스템 내부 CV 테이블 대조", "reason": "시스템이 지정한 제어 어휘(CV) 목록 내에서만 정확한 텍스트로 입력되도록 제한", "condition": "val('nuc_pkg')==='Nucleotide' || val('nuc_pkg')==='Synthetic_Construct'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Partial", "desc": "feature가끝나는곳(5`end 또는3`end)", "allowed": ["5`end", "3`end"], "std": "가능", "target": "Controlled Vocabulary (K-BDS 내부)", "extract": "K-BDS 시스템 내부 CV 테이블 대조", "reason": "시스템이 지정한 제어 어휘(CV) 목록 내에서만 정확한 텍스트로 입력되도록 제한", "condition": "val('nuc_pkg')==='Nucleotide' || val('nuc_pkg')==='Synthetic_Construct'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Nucleotide interval span", "desc": "feature의시퀀스범위", "allowed": ["Entire Sequence", "Specific Spans"], "std": "가능", "target": "Controlled Vocabulary (K-BDS 내부)", "extract": "K-BDS 시스템 내부 CV 테이블 대조", "reason": "시스템이 지정한 제어 어휘(CV) 목록 내에서만 정확한 텍스트로 입력되도록 제한", "condition": "val('nuc_pkg')==='Nucleotide' || val('nuc_pkg')==='Synthetic_Construct'", "req": "M"}, {"part": "Step6. Nucleotide (Genome/Nucleotide 전용 세부항목)", "field": "Interval", "desc": "서열내에서feature가차지하는구간의시작위치와끝위치를 입력", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "val('nuc_pkg')==='Nucleotide' || val('nuc_pkg')==='Synthetic_Construct'", "req": "M"}, {"part": "Step5. Assemble (Gap Information)", "field": "Presence of Gaps", "desc": "게놈어셈블리에해석되지않은구간(Gap, 일반적으로“N” 문자로표시됨)이 포함되어있는지를선택", "allowed": ["Yes", "No"], "std": "가능", "target": "Boolean (Y/N)", "extract": "Y/N 문자열 매칭", "reason": "참/거짓(Yes/No) 두 가지 상태값으로만 통일하여 논리 연산 오류 방지", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "M", "MAG": "M", "TLS": "-", "TSA": "M", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble (Gap Information)", "field": "Confirm artificial sequence concatenation", "desc": "여러서열을생물학적근거없이임의로하나의서열로병합했는지여부를 선택. 이러한인위적병합은Gap이생기는원인이될수있음", "allowed": ["Yes", "No"], "std": "가능", "target": "Boolean (Y/N)", "extract": "Y/N 문자열 매칭", "reason": "참/거짓(Yes/No) 두 가지 상태값으로만 통일하여 논리 연산 오류 방지", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "M", "MAG": "M", "TLS": "-", "TSA": "M", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble (Gap Information)", "field": "Minimum consecutive Ns for gap", "desc": "연속된“N” 문자가한행에서몇개이상일때gap으로간주할지를0~10 사이에서선택", "allowed": "[숫자]", "std": "불필요", "target": "-", "extract": "Float/Int 형변환 및 숫자 파싱", "reason": "텍스트가 아닌 연산 가능한 숫자형(Numeric) 데이터 타입 확인", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "G", "MAG": "G", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble (Gap Information)", "field": "Confirm 100Ns for unknown-length gaps", "desc": "길이를알수없는gap은정확히100개의N으로표시하였으며, 그외에는 모두길이가알려진gap인것이맞는지선택", "allowed": ["Yes", "No"], "std": "가능", "target": "Boolean (Y/N)", "extract": "Y/N 문자열 매칭", "reason": "참/거짓(Yes/No) 두 가지 상태값으로만 통일하여 논리 연산 오류 방지", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "G", "MAG": "G", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble (Gap Information)", "field": "Confirm gaps with more than 14 consecutive Ns", "desc": "gap 중에서14개를초과하는연속된N으로이루어진gap이있는지여부를 선택", "allowed": ["Yes", "No"], "std": "가능", "target": "Boolean (Y/N)", "extract": "Y/N 문자열 매칭", "reason": "참/거짓(Yes/No) 두 가지 상태값으로만 통일하여 논리 연산 오류 방지", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "-", "MAG": "-", "TLS": "-", "TSA": "M", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step5. Assemble (Gap Information)", "field": "Evidence for linking gaps", "desc": "어셈블리gap을연결하는데사용된근거를선택", "allowed": ["paired-ends", "align-genus", "align-xgenus", "map", "proximity-ligation", "align-trnscpt", "within-clone", "clone-contig"], "std": "가능", "target": "INSDC/NCBI AGP linkage evidence (K-BDS 원문보존 방침)", "extract": "K-BDS 시스템 내부 CV 테이블 대조", "reason": "AGP 포맷 명세의 linkage evidence 통제어휘와 대응되나, K-BDS는 원문 보존 정책을 적용 중", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "M", "MAG": "M", "TLS": "-", "TSA": "M", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step7. Mapping (MAG 전용)", "field": "Program for binning", "desc": "비닝과정에사용한프로그램의이름", "allowed": "[자유 기재 → NER 추출]", "std": "가능", "target": "EDAM ontology + bio.tools", "extract": "bio.tools API 조회", "reason": "비닝 소프트웨어 명칭의 국제 도구 레지스트리 등재 여부 확인", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "-", "MAG": "M", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step7. Mapping (MAG 전용)", "field": "Program Version or Run Date for binning", "desc": "비닝과정에사용한프로그램의버전혹은실행날짜", "allowed": "YYYY-MM-DD", "std": "가능", "target": "ISO 8601", "extract": "날짜 파싱 (Date Format Validation)", "reason": "날짜/시간 표기에 대한 국제 표준 규격(YYYY-MM-DD) 준수 확인", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "-", "MAG": "M", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step7. Mapping (MAG 전용)", "field": "Parameter for binning", "desc": "비닝과정에사용한파라미터", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "-", "MAG": "M", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step7. Mapping (MAG 전용)", "field": "Program for binning refinement", "desc": "비닝정제과정에사용한프로그램의이름", "allowed": "[자유 기재 → NER 추출]", "std": "가능", "target": "EDAM ontology + bio.tools", "extract": "bio.tools API 조회", "reason": "정제 소프트웨어 명칭의 국제 도구 레지스트리 등재 여부 확인", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "-", "MAG": "O", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step7. Mapping (MAG 전용)", "field": "Program Version or Run Date for binning refinement", "desc": "비닝정제과정에사용한프로그램의버전혹은실행날짜", "allowed": "YYYY-MM-DD", "std": "가능", "target": "ISO 8601", "extract": "날짜 파싱 (Date Format Validation)", "reason": "날짜/시간 표기에 대한 국제 표준 규격(YYYY-MM-DD) 준수 확인", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "-", "MAG": "O", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step7. Mapping (MAG 전용)", "field": "Program for evaluation", "desc": "평가과정에사용한프로그램의이름", "allowed": "[자유 기재 → NER 추출]", "std": "가능", "target": "EDAM ontology + bio.tools", "extract": "bio.tools API 조회", "reason": "평가 소프트웨어 명칭의 국제 도구 레지스트리 등재 여부 확인", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "-", "MAG": "M", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step7. Mapping (MAG 전용)", "field": "Program Version or Run Date for evaluation", "desc": "평가과정에사용한프로그램의버전혹은실행날짜", "allowed": "YYYY-MM-DD", "std": "가능", "target": "ISO 8601", "extract": "날짜 파싱 (Date Format Validation)", "reason": "날짜/시간 표기에 대한 국제 표준 규격(YYYY-MM-DD) 준수 확인", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "-", "MAG": "M", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step7. Mapping (MAG 전용)", "field": "Completeness score", "desc": "평가과정에서도출된최종완전도점수", "allowed": "[0-100 숫자]", "std": "가능", "target": "GSC MIMAG Guideline (Bowers et al. 2017)", "extract": "Float/Int 형변환 및 숫자 파싱", "reason": "텍스트가 아닌 연산 가능한 숫자형(Numeric) 데이터로 정확히 기재되었는지 확인, 품질등급(MIMAG) 기준 대조", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "-", "MAG": "M", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step7. Mapping (MAG 전용)", "field": "Contamination score", "desc": "평가과정에서도출된최종오염도점수", "allowed": "[0-100 숫자]", "std": "가능", "target": "GSC MIMAG Guideline (Bowers et al. 2017)", "extract": "Float/Int 형변환 및 숫자 파싱", "reason": "텍스트가 아닌 연산 가능한 숫자형(Numeric) 데이터로 정확히 기재되었는지 확인, 품질등급(MIMAG) 기준 대조", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "-", "MAG": "M", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step7. Mapping (MAG 전용)", "field": "Program for classification", "desc": "생물분류과정에사용한프로그램의이름", "allowed": "[자유 기재 → NER 추출]", "std": "가능", "target": "EDAM ontology + bio.tools", "extract": "bio.tools API 조회", "reason": "분류 소프트웨어 명칭의 국제 도구 레지스트리 등재 여부 확인", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "-", "MAG": "M", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step7. Mapping (MAG 전용)", "field": "Program Version or Run Date for classification", "desc": "생물분류과정에사용한프로그램의버전혹은실행날짜", "allowed": "YYYY-MM-DD", "std": "가능", "target": "ISO 8601", "extract": "날짜 파싱 (Date Format Validation)", "reason": "날짜/시간 표기에 대한 국제 표준 규격(YYYY-MM-DD) 준수 확인", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "-", "MAG": "M", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step7. Mapping (MAG 전용)", "field": "DB for classification", "desc": "생물분류과정에사용한데이터베이스", "allowed": "[자유 기재 → NER 추출]", "std": "가능", "target": "FAIRsharing / re3data.org", "extract": "FAIRsharing API 조회", "reason": "사용 데이터베이스명의 공식 데이터 레지스트리 등재 여부 확인", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "-", "MAG": "M", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step7. Mapping (MAG 전용)", "field": "Taxonomy classification", "desc": "Taxonomic classification 결과로도출된분류정보로, 해당생물의 학명과계층(level)을포함", "allowed": "[학명 또는 Taxon ID]", "std": "가능", "target": "NCBI Taxonomy (NCBITaxon)", "extract": "NCBI Taxonomy API 매칭", "reason": "생물 분류군에 대한 국제 공식 표준 온톨로지(NCBI Taxonomy) 매핑 적용", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "-", "MAG": "M", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step7. Mapping (MAG 전용)", "field": "NCBI taxonomy ID", "desc": "해당생물분류군의고유한NCBI 분류ID 입력", "allowed": "[학명 또는 Taxon ID]", "std": "가능", "target": "NCBI Taxonomy (NCBITaxon)", "extract": "NCBI Taxonomy API 매칭", "reason": "생물 분류군에 대한 국제 공식 표준 온톨로지(NCBI Taxonomy) 매핑 적용", "condition": "true", "reqMap": {"Nucleotide": "-", "Genome": "-", "MAG": "M", "TLS": "-", "TSA": "-", "Synthetic_Construct": "-", "PCR_primer": "-"}}, {"part": "Step8. Protocol", "field": "Sample processing protocol", "desc": "샘플을실험에사용하기전까지처리한방법에대해상세히입력 (예: 조직추출, 보존, 세포분리, RNA 추출방법등)", "allowed": "[자유 기재 → NER 추출]", "std": "가능", "target": "OBI + protocols.io", "extract": "OBI 온톨로지 매칭 / protocols.io 검색", "reason": "실험 절차 서술을 생물의학 실험 온톨로지(OBI) 및 공개 프로토콜과 대조", "condition": "true", "req": "O"}, {"part": "Step8. Protocol", "field": "Data processing protocol", "desc": "원시데이터로부터분석가능한형태로처리한방법을상세히입력 (예: quality control, adapter trimming, a…", "allowed": "[자유 기재 → NER 추출]", "std": "가능", "target": "EDAM ontology + bio.tools", "extract": "EDAM 온톨로지 매칭 / bio.tools 검색", "reason": "분석 파이프라인 서술을 생물정보학 온톨로지 및 도구 레지스트리와 대조", "condition": "true", "req": "O"}, {"part": "Step8. Protocol", "field": "Supplementary information", "desc": "샘플또는데이터와관련된참고사항이나기타필요한추가정보를 자유롭게입력", "allowed": "[자유 기재]", "std": "AI", "target": "논문, 사업계획서", "extract": "LLM 기반 NER(개체명 인식) 및 NLP 텍스트 마이닝", "reason": "자유기재된 비정형 텍스트에서 AI 추론을 활용하여 의미 있는 개체(Entity)와 메타데이터를 자동 추출하고 표준화하기 위함", "condition": "true", "req": "O"}, {"part": "Step8. Protocol", "field": "Release protocol", "desc": "위에입력한샘플/데이터처리프로토콜을공개할지선택", "allowed": ["Yes", "No"], "std": "가능", "target": "Boolean (Y/N)", "extract": "Y/N 문자열 매칭", "reason": "참/거짓(Yes/No) 두 가지 상태값으로만 통일하여 논리 연산 오류 방지", "condition": "true", "req": "M"}]
+            }
+        };
+
+        let currentView = '';
+
+        function val(id) {
+            const el = document.getElementById(id);
+            return el ? el.value : '';
+        }
+
+        function loadView(viewId) {
+            document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
+            const btn = document.getElementById('btn-' + viewId);
+            if (btn) btn.classList.add('active');
+
+            document.getElementById('placeholder').style.display = 'none';
+            document.getElementById('controls-container').style.display = 'flex';
+            document.getElementById('table-container').style.display = 'block';
+
+            currentView = viewId;
+            const viewData = db[viewId];
+            if (!viewData) return;
+
+            document.getElementById('view-title').innerText = viewData.title;
+            document.getElementById('item-count').innerText = `총 항목수: ${viewData.items.length}개`;
+
+            let controlsHtml = '';
+            viewData.controls.forEach(ctrl => {
+                controlsHtml += `<div class="control-group">
+                    <label for="${ctrl.id}">${ctrl.label}:</label>
+                    <select id="${ctrl.id}" onchange="renderTable()">
+                        ${ctrl.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                    </select>
+                </div>`;
+            });
+
+            if (viewData.controls.length === 0) controlsHtml = '<span style="color:#666; font-size:0.9em;">(조건부 분기 없이 모든 항목이 표출되는 공통 양식입니다.)</span>';
+
+            document.getElementById('controls-container').innerHTML = controlsHtml;
+            renderTable();
+        }
+
+        function renderTable() {
+            const viewData = db[currentView];
+            if (!viewData) return;
+            let html = '';
+
+            viewData.items.forEach((item, index) => {
+                let isVisible = true;
+
+                // 범용 동적 분기: reqMap이 있으면 이 뷰의 첫번째 컨트롤 값을 키로 사용
+                // (기존 mims/std 전용 하드코딩을 일반화 — 새 view 추가 시 이 함수를 또 고칠 필요 없음)
+                if (item.reqMap && viewData.controls.length > 0) {
+                    const ctrlId = viewData.controls[0].id;
+                    const key = val(ctrlId);
+                    const dynamicReq = item.reqMap[key] || '-';
+                    if (dynamicReq === '-') isVisible = false;
+                    item._currentReq = dynamicReq;
+                }
+
+                if (item.condition && item.condition !== 'true') {
+                    try { isVisible = eval(item.condition); } catch (e) { }
+                }
+
+                let reqStr = item._currentReq ? item._currentReq : item.req;
+                let displayReq = isVisible ? reqStr : '-';
+
+                let reqTag = displayReq;
+                if (displayReq.startsWith('M')) reqTag = `<span class="tag m">${displayReq}</span>`;
+                else if (displayReq.startsWith('O')) reqTag = `<span class="tag o">${displayReq}</span>`;
+                else if (displayReq.startsWith('G')) reqTag = `<span class="tag g">${displayReq}</span>`;
+                else reqTag = `<span class="tag na">-</span>`;
+
+                let stdTag = '';
+                if (item.std === '가능') stdTag = '<span class="tag std-y">가능</span>';
+                else if (item.std === '불가능') stdTag = '<span class="tag std-n">불가능</span>';
+                else if (item.std === 'AI') stdTag = '<span class="tag ai">AI</span>';
+                else stdTag = '<span class="tag std-na">불필요</span>';
+
+                let rowClass = isVisible ? '' : 'dimmed';
+                let targetDisplay = isVisible ? item.target : '<span style="color:#adb5bd;">-</span>';
+                let extractDisplay = isVisible ? item.extract : '<span style="color:#adb5bd;">-</span>';
+                let reasonDisplay = isVisible ? item.reason : '<span style="color:#adb5bd;">-</span>';
+
+                let allowedHtml = '';
+                if (Array.isArray(item.allowed)) {
+                    allowedHtml = '<select class="dynamic-dropdown"><option value="">-- ' + item.allowed.length + '개 옵션 --</option>';
+                    item.allowed.forEach(opt => {
+                        allowedHtml += '<option value="' + opt + '">' + opt + '</option>';
+                    });
+                    allowedHtml += '</select>';
+                } else {
+                    allowedHtml = `<span style="color:#0056b3; font-weight:bold;">${item.allowed}</span>`;
+                }
+
+                html += `<tr class="${rowClass}">
+                            <td style="text-align:center; font-weight:bold; color:#6c757d;">${index + 1}</td>
+                            <td><span style="color:#495057; font-weight:bold;">${item.part}</span></td>
+                            <td><b>${item.field}</b></td>
+                            <td style="color:#333; line-height:1.3;">${item.desc}</td>
+                            <td>${allowedHtml}</td>
+                            <td style="text-align:center;">${reqTag}</td>
+                            <td style="text-align:center;">${stdTag}</td>
+                            <td style="color:#495057;">${targetDisplay}</td>
+                            <td style="color:#28a745; word-break: keep-all; line-height:1.3;">${extractDisplay}</td>
+                            <td style="color:#17a2b8; word-break: keep-all; line-height:1.3; font-weight:bold;">${reasonDisplay}</td>
+                        </tr>`;
+            });
+
+            document.getElementById('table-body').innerHTML = html;
+        }
+
+        renderDataTypeUI();
+    </script>
+</body>
+</html>

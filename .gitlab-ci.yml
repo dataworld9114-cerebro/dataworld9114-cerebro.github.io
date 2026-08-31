@@ -1,0 +1,88 @@
+# 생명연 데이터 등록 가이드 — 탭 통합 화면 CI
+#
+# 파이프라인 구성
+#   build   : 커밋마다 단일 HTML 번들 생성 (아티팩트로 내려받기 가능)
+#   pages   : 기본 브랜치 푸시 시 GitLab Pages 배포 (최신 + 과거 태그 버전)
+#   release : v* 태그 푸시 시 릴리스 생성 + 번들 첨부
+#
+# Pages 가 비활성화된 사내 GitLab 이라면 pages 잡만 지우고 쓰면 된다.
+# 그 경우 build 잡의 아티팩트(또는 릴리스 첨부 파일)가 배포 수단이 된다.
+
+# ── Pages 사용 여부 스위치 ───────────────────────────────────────────
+# 사내 GitLab 에 Pages 가 없으면 그대로 두면 된다 (pages 잡이 아예 실행되지 않음).
+# 나중에 Pages 가 열리면 프로젝트 > 설정 > CI/CD > 변수 에서
+# PAGES_ENABLED 를 "true" 로 바꾸기만 하면 배포가 시작된다.
+variables:
+  PAGES_ENABLED: "false"
+
+# ── 러너 태그 ────────────────────────────────────────────────────────
+# 이 프로젝트에서 쓸 수 있는 러너가 태그(예: deploy-server)를 달고 있고
+# "태그 없는 잡은 실행 안 함" 으로 설정되어 있으면, 아래 tags 주석을
+# 각 잡에 풀어서 넣어야 잡이 잡힌다. 태그가 틀리면 잡이 pending 으로 멈춘다.
+#
+#   tags:
+#     - deploy-server
+#
+# 러너가 아예 없다면 이 파일은 그대로 두고 tools/release.sh 로 운영한다.
+
+default:
+  image: python:3.12-slim
+
+stages:
+  - build
+  - deploy
+  - release
+
+# ---------------------------------------------------------------- build
+build_bundle:
+  stage: build
+  script:
+    - python3 build.py --out public_preview --dist dist --self "${CI_COMMIT_TAG:-latest}"
+  artifacts:
+    name: "guide-${CI_COMMIT_REF_SLUG}"
+    expire_in: $BUNDLE_EXPIRE
+    paths:
+      - dist/
+      - public_preview/
+  rules:
+    # 태그 빌드 = 공식 배포본이므로 아티팩트를 만료시키지 않는다.
+    - if: $CI_COMMIT_TAG
+      variables:
+        BUNDLE_EXPIRE: never
+    - when: on_success
+      variables:
+        BUNDLE_EXPIRE: 90 days
+
+# ---------------------------------------------------------------- pages
+# public/ 아래에 최신본을, public/v/<tag>/ 아래에 과거 버전을 배치한다.
+pages:
+  stage: deploy
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq git >/dev/null
+    - git fetch --tags --force --quiet
+  script:
+    - python3 tools/build_versions.py --out public --keep 10
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $PAGES_ENABLED == "true"
+  # 사내 정책상 Pages 를 로그인 사용자에게만 열려면
+  # 프로젝트 > 배포 > Pages > "Pages 액세스 제한" 을 켠다.
+
+# ---------------------------------------------------------------- release
+create_release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]/
+  script:
+    - echo "릴리스 $CI_COMMIT_TAG 생성"
+  release:
+    tag_name: "$CI_COMMIT_TAG"
+    name: "가이드 $CI_COMMIT_TAG"
+    description: "CHANGELOG.md 참고. 단일 HTML 번들은 아래 링크에서 내려받을 수 있습니다."
+    assets:
+      links:
+        - name: "guide-$CI_COMMIT_TAG.html (단일 파일)"
+          url: "$CI_PROJECT_URL/-/jobs/artifacts/$CI_COMMIT_TAG/raw/dist/guide-$CI_COMMIT_TAG.html?job=build_bundle"

@@ -1,0 +1,50 @@
+name: Deploy to GitHub Pages
+
+# main 에 푸시하면 최신본을, v* 태그를 푸시하면 그 버전까지 포함해 배포한다.
+# 결과 주소: https://<계정>.github.io/<저장소>/
+#   최신본      /
+#   과거 버전   /v/v0.1/
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 배포는 한 번에 하나만. 진행 중인 배포를 취소하지 않는다.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # 과거 버전 빌드에 태그 전체가 필요하다
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 사이트 빌드 (최신 + 과거 태그)
+        run: python3 tools/build_versions.py --out public --keep 10
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

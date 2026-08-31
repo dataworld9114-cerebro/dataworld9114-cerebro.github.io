@@ -1,0 +1,8 @@
+public/
+public_preview/
+
+# 로컬 임시 빌드 (배포본은 releases/ 에 보관)
+dist/
+
+__pycache__/
+.DS_Store
