@@ -26,14 +26,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0        # 과거 버전 빌드에 태그 전체가 필요하다
+          fetch-depth: 0        # 과거 버전 빌드에 커밋 이력 전체가 필요하다
+          fetch-tags: true      # 태그도 함께 (이게 없으면 /v/<tag>/ 가 안 만들어진다)
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
+      - name: 러너가 인식한 태그 확인
+        run: |
+          echo "--- git tag ---"
+          git tag --list "v*" --sort=-v:refname
+          echo "---------------"
+
       - name: 사이트 빌드 (최신 + 과거 태그)
         run: python3 tools/build_versions.py --out public --keep 10
+
+      - name: 만들어진 버전 폴더 확인
+        run: ls -R public/v 2>/dev/null || echo "public/v 없음 — 태그가 인식되지 않았습니다"
 
       - uses: actions/upload-pages-artifact@v3
         with:
