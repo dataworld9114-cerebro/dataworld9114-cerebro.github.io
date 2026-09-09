@@ -28,11 +28,19 @@
   .linkbtn:hover{background:rgba(255,255,255,.12);color:#fff}
 
   nav{display:flex;gap:4px;overflow-x:auto}
-  .tab{appearance:none;border:0;cursor:pointer;white-space:nowrap;
+  .group-tabs{margin-top:1px}
+  .group-tab{appearance:none;border:0;cursor:pointer;white-space:nowrap;
        background:rgba(255,255,255,.12);color:#dce8f2;
+       font:inherit;font-size:14px;font-weight:700;
+       padding:10px 20px;border-radius:8px 8px 0 0;border-bottom:3px solid transparent}
+  .group-tab:hover{background:rgba(255,255,255,.22);color:#fff}
+  .group-tab[aria-selected="true"]{background:#eef3f7;color:var(--navy);border-bottom-color:#ffc65c}
+  .subnav{flex:0 0 auto;background:#eef3f7;border-bottom:1px solid var(--line);padding:7px 16px 0}
+  .tab{appearance:none;border:0;cursor:pointer;white-space:nowrap;
+       background:#dce5ed;color:#36566f;
        font:inherit;font-size:13px;font-weight:600;
        padding:9px 16px;border-radius:8px 8px 0 0;border-bottom:3px solid transparent}
-  .tab:hover{background:rgba(255,255,255,.22);color:#fff}
+  .tab:hover{background:#cddbe6;color:var(--navy-dark)}
   .tab[aria-selected="true"]{background:var(--panel);color:var(--navy);border-bottom-color:#ffc65c}
 
   .meta{flex:0 0 auto;background:var(--panel);border-bottom:1px solid var(--line);
@@ -57,8 +65,12 @@
     <select id="verSel"></select>
     <a class="linkbtn" id="openNew" href="#" target="_blank" rel="noopener">새 창에서 열기</a>
   </div>
-  <nav id="tabs" role="tablist"></nav>
+  <nav id="groups" class="group-tabs" role="tablist" aria-label="상위 항목"></nav>
 </header>
+
+<div class="subnav">
+  <nav id="tabs" role="tablist" aria-label="표준 항목 세부 분류"></nav>
+</div>
 
 <div class="meta">
   <span><b id="mTitle"></b></span>
@@ -74,9 +86,11 @@
 <script>
 (function(){
   var CFG = JSON.parse(document.getElementById('cfg').textContent);
+  var groupsEl = document.getElementById('groups');
   var tabsEl = document.getElementById('tabs');
   var stage  = document.getElementById('stage');
   var frames = {};
+  var activeGroupId = null;
 
   document.getElementById('relBadge').textContent =
     (CFG.self === 'latest' ? '최신 (' + CFG.release + ')' : CFG.self);
@@ -106,8 +120,41 @@
     return null;
   }
 
+  function groupByDocId(id){
+    for (var i=0;i<CFG.groups.length;i++){
+      if (CFG.groups[i].docs.indexOf(id) !== -1) return CFG.groups[i];
+    }
+    return null;
+  }
+
+  function renderDocTabs(group){
+    tabsEl.textContent = '';
+    group.docs.forEach(function(id){
+      var d = docById(id); if (!d) return;
+      var b = document.createElement('button');
+      b.className='tab'; b.type='button'; b.role='tab';
+      b.dataset.id = d.id; b.textContent = d.label;
+      b.setAttribute('aria-selected','false');
+      b.addEventListener('click', function(){ show(d.id, true); });
+      tabsEl.appendChild(b);
+    });
+  }
+
+  function selectGroup(group, showFirst){
+    if (!group) return;
+    activeGroupId = group.id;
+    Array.prototype.forEach.call(groupsEl.children, function(b){
+      b.setAttribute('aria-selected', String(b.dataset.id === group.id));
+    });
+    renderDocTabs(group);
+    if (showFirst && group.docs.length) show(group.docs[0], true);
+  }
+
   function show(id, push){
     var d = docById(id); if (!d) return;
+
+    var group = groupByDocId(id);
+    if (group && activeGroupId !== group.id) selectGroup(group, false);
 
     Array.prototype.forEach.call(tabsEl.children, function(b){
       b.setAttribute('aria-selected', String(b.dataset.id === id));
@@ -142,13 +189,13 @@
     if (push && location.hash !== '#' + id) history.replaceState(null,'','#'+id);
   }
 
-  CFG.docs.forEach(function(d){
+  CFG.groups.forEach(function(group){
     var b = document.createElement('button');
-    b.className='tab'; b.type='button'; b.role='tab';
-    b.dataset.id = d.id; b.textContent = d.label;
+    b.className='group-tab'; b.type='button'; b.role='tab';
+    b.dataset.id = group.id; b.textContent = group.label;
     b.setAttribute('aria-selected','false');
-    b.addEventListener('click', function(){ show(d.id, true); });
-    tabsEl.appendChild(b);
+    b.addEventListener('click', function(){ selectGroup(group, true); });
+    groupsEl.appendChild(b);
   });
 
   var start = (location.hash || '').replace('#','');

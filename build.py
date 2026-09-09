@@ -61,6 +61,11 @@ def render(manifest: dict, mode: str, self_name: str, tags: list[str]) -> str:
     cfg = {
         "site_title": manifest["site_title"],
         "release": manifest.get("release", ""),
+        "groups": manifest.get("groups", [{
+            "id": "all",
+            "label": "표준 항목",
+            "docs": [d["id"] for d in manifest["docs"]],
+        }]),
         "mode": mode,
         "self": self_name,
         "built_at": datetime.now(KST).strftime("%Y-%m-%d %H:%M KST"),
@@ -125,6 +130,25 @@ def validate(manifest: dict) -> None:
         seen_file.add(dfile)
         if dfile and not (ROOT / dfile).exists():
             problems.append(f"파일이 없습니다: '{dfile}' (docs/ 에 넣으셨나요?)")
+
+    groups = manifest.get("groups") or []
+    if groups:
+        known_ids = {d.get("id") for d in docs}
+        seen_group_ids, grouped_docs = set(), []
+        for i, group in enumerate(groups, 1):
+            gid = group.get("id")
+            if not gid or not group.get("label"):
+                problems.append(f"{i}번째 groups 항목에는 'id'와 'label'이 필요합니다.")
+            if gid in seen_group_ids:
+                problems.append(f"그룹 id가 중복됩니다: '{gid}'")
+            seen_group_ids.add(gid)
+            for doc_id in group.get("docs", []):
+                if doc_id not in known_ids:
+                    problems.append(f"그룹 '{gid}'의 문서 id가 존재하지 않습니다: '{doc_id}'")
+                grouped_docs.append(doc_id)
+        missing = known_ids - set(grouped_docs)
+        if missing:
+            problems.append("상위 그룹에 포함되지 않은 문서가 있습니다: " + ", ".join(sorted(missing)))
 
     if problems:
         raise SystemExit("manifest.json 확인이 필요합니다:\n  - " + "\n  - ".join(problems))
