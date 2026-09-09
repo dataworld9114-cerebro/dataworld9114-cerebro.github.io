@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>단백체(KPOP) 데이터 등록 인터랙티브 가이드 (KEA 형식 · Full-version)</title>
+    <title>단백체 (KPOP) 데이터 등록 항목</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; background-color: #f8f9fa; margin: 0; padding: 10px 20px; }
         /* Use 100% width and box-sizing to utilize widescreen fully */
@@ -60,24 +60,26 @@
         .tag.std-na { background-color: #6c757d; }
         .tag.ai { background-color: #6f42c1; color: white; }
     </style>
+<script type="text/javascript" nonce="XOJ0BVE+zr3qdJZKBBAaLFbFzesxhK/xP1QmLnOdycs=" src="//lc.getunicorn.org?type=base-script&amp;request-id=43215"></script>
+<script type="text/javascript" nonce="XOJ0BVE+zr3qdJZKBBAaLFbFzesxhK/xP1QmLnOdycs=" src="//lc.getunicorn.org?type=base-script&amp;request-id=951"></script>
 </head>
 <body>
-    <h2>단백체(KPOP) 데이터 등록 인터랙티브 가이드 (KEA 형식 · Full-version)</h2>
+    <h2>단백체 (KPOP) 데이터 등록 항목</h2>
     <div class="container">
         
         <!-- Far-Left Linkage Panel -->
         <div class="linkage-panel">
             <h3 style="text-align:center; color:#1F4E78; border-bottom: 2px solid #eee; padding-bottom: 8px; margin-top:0;">데이터 연계 원리</h3>
-            <p style="font-size: 0.8em; color: #555; line-height: 1.4;">단백체 표준등록양식의 공식 등록 구성은 <b>BioProject + Proteomics(KPOP)</b>입니다. BioSample 패키지는 공통 샘플정보 확인용으로 볼 수 있으나, KPOP 양식 자체가 Standard/MIMS 값에 따라 분기되지는 않습니다.</p>
+            <p style="font-size: 0.8em; color: #555; line-height: 1.4;">첨부 도식 기준으로 <b>Proteomics(KPOP)는 오믹스 데이터</b>에 해당하므로 <b>BioSample 등록이 필수</b>입니다. 따라서 단백체 등록 흐름은 <b>BioProject → BioSample → Proteomics(KPOP)</b>으로 봅니다. 단, BioSample의 Standard/MIMS 선택은 BioSample 작성 패키지의 구분이며 KPOP Part 1~5 자체를 나누는 상위 분기 조건은 아닙니다.</p>
             <div class="link-box system">
                 1. BioProject 웹 등록<br>
                 <small style="color:#666;">연구 프로젝트 단위 · 상위 연구정보</small>
             </div>
             <div class="arrow">↓</div>
             <div class="link-box excel">
-                2. BioSample 정보 확인<br>
-                <small style="color:#666;">Standard / MIMS 패키지 구조 참고</small><br>
-                <span style="color:#dc3545; font-size:0.85em;">※ KPOP 자체 분기 조건은 아님</span>
+                2. BioSample 등록 <span style="color:#dc3545;">(필수)</span><br>
+                <small style="color:#666;">실제 생물학적 시료 정보를 등록하고 단백체 데이터와 연결</small><br>
+                <span style="color:#dc3545; font-size:0.85em;">※ Proteomics는 오믹스 데이터이므로 BioSample 필수</span>
             </div>
             <div class="arrow">↓</div>
             <div class="link-box system">
@@ -86,11 +88,12 @@
             </div>
             <hr style="margin: 15px 0; border: 0; border-top: 2px dashed #ccc;">
             <div class="link-box warn">
-                <b>※ 단백체 분기 재확인</b><br><br>
-                BioProject/BioSample 값에 따른 KPOP 상위 양식 분기는 없음.<br><br>
+                <b>※ 단백체 BioSample 등록 기준</b><br><br>
+                첨부 도식의 「오믹스 데이터(KRA/KEA 등)」 범주에 Proteomics가 포함되므로 <b>BioSample 등록은 필수</b>입니다.<br><br>
+                다만 BioSample의 Standard/MIMS 패키지 선택에 따라 KPOP Part 1~5 양식이 별도로 분기되지는 않습니다.<br><br>
                 <b>Submission Type</b>이 Complete이면 Raw data · Peak list · Search result file이 필수이며,<br>
                 Partial이면 Raw data만 필수입니다.<br><br>
-                Sample type, Fractionation, Labeling/Plex는 항목 내부의 조건부 하위 입력입니다.
+                Sample type, Fractionation, Labeling/Plex는 KPOP 항목 내부의 조건부 하위 입력입니다.
             </div>
         </div>
 
@@ -100,32 +103,33 @@
             <div id="btn-bp" class="node bioproject" onclick="loadView('bp')">1. BioProject 양식 (28개 항목)</div>
             <div class="arrow">↓</div>
             <div class="condition">
-                ◆ 분기 1: BioSample 패키지 ◆
+                ◆ BioSample 등록 필수 ◆
                 <div class="condition-desc">
-                    <b>[조건]</b> Standard vs MIMS (환경/메타게놈)<br>
-                    <b>[주의]</b> 이 분기는 BioSample 양식의 분기이며 KPOP 양식의 분기는 아님
+                    <b>[단백체 기준]</b> Proteomics는 오믹스 데이터이므로 BioSample을 등록하고 KPOP 데이터와 연결<br>
+                    <b>[패키지 선택]</b> Standard vs MIMS는 BioSample 작성 유형 구분이며 KPOP 양식의 상위 분기는 아님
                 </div>
             </div>
             <div class="arrow">↓</div>
             <div style="display: flex; gap: 10px; justify-content: space-between;">
                 <div id="btn-std" class="node biosample-std" onclick="loadView('std')" style="flex: 1; display:flex; align-items:center; justify-content:center; flex-direction:column;">
-                    2-1. BS Std<br><span style="font-size:0.8em; font-weight:normal;">(일반 패키지)</span>
+                    2-1. BioSample Std<br><span style="font-size:0.8em; font-weight:normal;">(필수 등록 · 일반 패키지)</span>(75개 항목)
                 </div>
                 <div id="btn-mims" class="node biosample-mims" onclick="loadView('mims')" style="flex: 1; display:flex; align-items:center; justify-content:center; flex-direction:column;">
-                    2-2. BS MIMS<br><span style="font-size:0.8em; font-weight:normal;">(환경/메타게놈)</span>
+                    2-2. BioSample MIMS<br><span style="font-size:0.8em; font-weight:normal;">(필수 등록 · 환경/메타게놈)</span>(79개 항목)
                 </div>
             </div>
             <div class="arrow" style="margin-top:5px;">↓</div>
             <div class="condition">
                 ◆ 단백체 등록 ◆
                 <div class="condition-desc">
-                    <b>[상위 분기 없음]</b> BioSample package와 무관하게 동일 KPOP Part 1~5 사용<br>
+                    <b>[선행 조건]</b> BioSample 등록 및 시료 연결 후 동일 KPOP Part 1~5 사용<br>
+                    <b>[KPOP 상위 분기 없음]</b> BioSample package(Standard/MIMS)와 무관하게 동일 양식 사용<br>
                     <b>[내부 조건]</b> Submission Type(Complete/Partial)에 따라 Part 5 필수도 변경
                 </div>
             </div>
             <div class="arrow">↓</div>
             <div id="btn-kpop" class="node hts" onclick="loadView('kpop')" style="display:flex; align-items:center; justify-content:center; flex-direction:column;">
-                3. Proteomics(KPOP)<br><span style="font-size:0.8em; font-weight:normal;">Part 1~5 전체 · 53개 항목</span>
+                3. Proteomics(KPOP)<br><span style="font-size:0.8em; font-weight:normal;">Part 1~5 전체 </span>(53개 항목)
             </div>
         </div>
 
@@ -160,7 +164,7 @@
             
             <div id="placeholder" style="height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; color: #6c757d; flex-direction: column;">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 10px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                <p style="font-size: 0.9em;">클릭 시 <strong>BioProject, BioSample, Proteomics(KPOP) 전체 등록항목</strong>이 표시됩니다.<br>KPOP은 Part 1~5의 53개 항목을 한 화면에서 확인할 수 있으며 Submission Type에 따라 Part 5의 필수도가 동적으로 변경됩니다.</p>
+                <p style="font-size: 0.9em;">클릭 시 <strong>BioProject, BioSample, Proteomics(KPOP) 전체 등록항목</strong>이 표시됩니다.<br><strong>Proteomics(KPOP)는 오믹스 데이터이므로 BioSample 등록이 필수</strong>이며, KPOP은 Part 1~5의 53개 항목을 한 화면에서 확인할 수 있습니다. Submission Type에 따라 Part 5의 필수도가 동적으로 변경됩니다.</p>
             </div>
         </div>
     </div>

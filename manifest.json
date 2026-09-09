@@ -1,11 +1,16 @@
 {
-  "site_title": "생명연 데이터 등록 인터랙티브 가이드",
-  "release": "v0.2",
+  "site_title": "생명연 데이터 표준 항목 등록 가이드 분석",
+  "release": "v0.3",
   "groups": [
     {
       "id": "standard",
       "label": "표준 항목",
       "docs": ["kra", "kea", "kna", "kvar", "kpop", "kmap"]
+    },
+    {
+      "id": "standard2",
+      "label": "등록 알고리즘",
+      "docs": ["algorithm"]
     }
   ],
   "docs": [
@@ -13,49 +18,57 @@
       "id": "kra",
       "label": "NGS 유전체 (KRA)",
       "file": "docs/kra-ngs.html",
-      "version": "v0.1",
-      "updated": "2026-08-31",
-      "note": "NGS 유전체 데이터 등록 — K-BDS KRA Full"
+      "version": "v0.2",
+      "updated": "2026-09-09",
+      "note": "NGS 유전체 데이터 등록"
     },
     {
       "id": "kea",
-      "label": "기능유전체 (KEA)",
+      "label": "기능 유전체 (KEA)",
       "file": "docs/kea.html",
-      "version": "v0.1",
-      "updated": "2026-08-31",
-      "note": "기능유전체 데이터 등록 100% Full-version"
+      "version": "v0.2",
+      "updated": "2026-09-09",
+      "note": "기능 유전체 데이터 등록"
     },
     {
       "id": "kna",
       "label": "염기서열 (KNA)",
       "file": "docs/kna.html",
-      "version": "v0.2",
-      "updated": "2026-09-01",
-      "note": "유전체 데이터 등록 — 염기서열 Full-version"
+      "version": "v0.3",
+      "updated": "2026-09-09",
+      "note": "유전체 데이터 등록"
     },
     {
       "id": "kvar",
-      "label": "유전체변이 (KVar)",
+      "label": "유전체 변이 (KVar)",
       "file": "docs/kvar.html",
-      "version": "v0.1",
-      "updated": "2026-08-31",
-      "note": "유전체 변이 데이터 등록 Full-version"
+      "version": "v0.2",
+      "updated": "2026-09-09",
+      "note": "유전체 변이 데이터 등록"
     },
     {
       "id": "kpop",
       "label": "단백체 (KPOP)",
       "file": "docs/kpop.html",
-      "version": "v0.1",
-      "updated": "2026-08-31",
-      "note": "단백체 데이터 등록 — KEA 형식 Full-version"
+      "version": "v0.2",
+      "updated": "2026-09-09",
+      "note": "단백체 데이터 등록"
     },
     {
       "id": "kmap",
       "label": "대사체 (KMAP)",
       "file": "docs/kmap.html",
-      "version": "v0.1",
-      "updated": "2026-08-31",
+      "version": "v0.2",
+      "updated": "2026-09-09",
       "note": "대사체 데이터 등록"
+    },
+    {
+      "id": "algorithm",
+      "label": "등록 알고리즘 통합",
+      "file": "docs/algorithm.html",
+      "version": "v0.1",
+      "updated": "2026-09-09",
+      "note": "등록 알고리즘과 표준화 방안 정리"
     }
   ]
 }
