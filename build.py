@@ -63,6 +63,7 @@ def render(manifest: dict, mode: str, self_name: str, tags: list[str]) -> str:
     cfg = {
         "site_title": manifest["site_title"],
         "release": manifest.get("release", ""),
+        "default_doc": manifest.get("default_doc", manifest["docs"][0]["id"]),
         "groups": manifest.get("groups", [{
             "id": "all",
             "label": "표준 항목",
@@ -151,6 +152,10 @@ def validate(manifest: dict) -> None:
         missing = known_ids - set(grouped_docs)
         if missing:
             problems.append("상위 그룹에 포함되지 않은 문서가 있습니다: " + ", ".join(sorted(missing)))
+
+    default_doc = manifest.get("default_doc")
+    if default_doc and default_doc not in {d.get("id") for d in docs}:
+        problems.append(f"기본 문서 id가 존재하지 않습니다: '{default_doc}'")
 
     if problems:
         raise SystemExit("manifest.json 확인이 필요합니다:\n  - " + "\n  - ".join(problems))

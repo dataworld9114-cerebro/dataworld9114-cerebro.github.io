@@ -203,7 +203,8 @@
   });
 
   var start = (location.hash || '').replace('#','');
-  show(docById(start) ? start : CFG.docs[0].id, true);
+  var defaultId = docById(CFG.default_doc) ? CFG.default_doc : CFG.docs[0].id;
+  show(docById(start) ? start : defaultId, true);
   window.addEventListener('hashchange', function(){
     var id = (location.hash||'').replace('#','');
     if (docById(id)) show(id, false);
