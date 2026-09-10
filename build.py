@@ -50,11 +50,13 @@ def render(manifest: dict, mode: str, self_name: str, tags: list[str]) -> str:
     for d in manifest["docs"]:
         docs.append({
             "id": d["id"],
+            "document_no": d.get("document_no", ""),
             "label": d["label"],
             # site 모드는 상대경로 그대로, bundle 모드는 파일 경로를 쓰지 않는다
             "file": ("docs/" + Path(d["file"]).name) if mode == "site" else "",
             "version": d.get("version", ""),
             "updated": d.get("updated", ""),
+            "author": d.get("author", ""),
             "note": d.get("note", ""),
         })
 
@@ -118,8 +120,8 @@ def validate(manifest: dict) -> None:
 
     problems, seen_id, seen_file = [], set(), set()
     for i, d in enumerate(docs, 1):
-        for key in ("id", "label", "file"):
-            if not d.get(key):
+        for key in ("id", "document_no", "label", "file", "author"):
+            if key not in d:
                 problems.append(f"{i}번째 항목에 '{key}' 가 없습니다.")
         did, dfile = d.get("id"), d.get("file")
         if did in seen_id:

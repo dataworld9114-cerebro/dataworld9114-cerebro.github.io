@@ -73,9 +73,11 @@
 </div>
 
 <div class="meta">
+  <span>문서번호 <b id="mDocNo"></b></span>
   <span><b id="mTitle"></b></span>
   <span>문서 버전 <b id="mVer"></b></span>
   <span>최종 수정 <b id="mDate"></b></span>
+  <span>작성자 <b id="mAuthor"></b></span>
   <span id="mNote"></span>
 </div>
 
@@ -159,10 +161,12 @@
     Array.prototype.forEach.call(tabsEl.children, function(b){
       b.setAttribute('aria-selected', String(b.dataset.id === id));
     });
-    document.getElementById('mTitle').textContent = d.label;
-    document.getElementById('mVer').textContent   = d.version || '-';
-    document.getElementById('mDate').textContent  = d.updated || '-';
-    document.getElementById('mNote').textContent  = d.note || '';
+    document.getElementById('mDocNo').textContent  = d.document_no || '-';
+    document.getElementById('mTitle').textContent  = d.label;
+    document.getElementById('mVer').textContent    = d.version || '-';
+    document.getElementById('mDate').textContent   = d.updated || '-';
+    document.getElementById('mAuthor').textContent = d.author || '-';
+    document.getElementById('mNote').textContent   = d.note || '';
 
     var open = document.getElementById('openNew');
     if (CFG.mode === 'site'){ open.href = d.file; open.style.display=''; }

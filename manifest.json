@@ -1,74 +1,98 @@
 {
-  "site_title": "생명연 데이터 표준 항목 등록 가이드 분석",
-  "release": "v0.3",
+  "site_title": "K-BDS 데이터 표준 항목 분석 및 표준화 설계서",
+  "release": "v0.4",
   "groups": [
     {
       "id": "standard",
-      "label": "표준 항목",
-      "docs": ["kra", "kea", "kna", "kvar", "kpop", "kmap"]
+      "label": "분석",
+      "docs": ["algorithm","kra", "kea", "kna", "kvar", "kpop", "kmap"]
     },
     {
       "id": "standard2",
-      "label": "등록 알고리즘",
-      "docs": ["algorithm"]
+      "label": "설계",
+      "docs": ["total"]
     }
   ],
   "docs": [
     {
       "id": "kra",
+      "document_no": "ABS-SYS-10-02-001",
       "label": "NGS 유전체 (KRA)",
       "file": "docs/kra-ngs.html",
       "version": "v0.2",
       "updated": "2026-09-09",
+      "author": "김상영",
       "note": "NGS 유전체 데이터 등록"
     },
     {
       "id": "kea",
+      "document_no": "ABS-SYS-10-02-002",
       "label": "기능 유전체 (KEA)",
       "file": "docs/kea.html",
       "version": "v0.2",
       "updated": "2026-09-09",
+      "author": "전우민",
       "note": "기능 유전체 데이터 등록"
     },
     {
       "id": "kna",
+      "document_no": "ABS-SYS-10-02-003",
       "label": "염기서열 (KNA)",
       "file": "docs/kna.html",
       "version": "v0.3",
       "updated": "2026-09-09",
+      "author": "박종세",
       "note": "유전체 데이터 등록"
     },
     {
       "id": "kvar",
+      "document_no": "ABS-SYS-10-02-004",
       "label": "유전체 변이 (KVar)",
       "file": "docs/kvar.html",
       "version": "v0.2",
       "updated": "2026-09-09",
+      "author": "정상욱",
       "note": "유전체 변이 데이터 등록"
     },
     {
       "id": "kpop",
+      "document_no": "ABS-SYS-10-02-005",
       "label": "단백체 (KPOP)",
       "file": "docs/kpop.html",
       "version": "v0.2",
       "updated": "2026-09-09",
+      "author": "김종범",
       "note": "단백체 데이터 등록"
     },
     {
       "id": "kmap",
+      "document_no": "ABS-SYS-10-02-006",
       "label": "대사체 (KMAP)",
       "file": "docs/kmap.html",
       "version": "v0.2",
       "updated": "2026-09-09",
+      "author": "김선정",
       "note": "대사체 데이터 등록"
     },
     {
       "id": "algorithm",
-      "label": "등록 알고리즘 통합",
+      "document_no": "ABS-SYS-10-02",
+      "label": "K-BDS 데이터 분석서",
       "file": "docs/algorithm.html",
       "version": "v0.1",
       "updated": "2026-09-09",
-      "note": "등록 알고리즘과 표준화 방안 정리"
+      "author": "김선정",
+      "note": "분기별 등록 알고리즘 정리"
+    },
+    {
+      "id": "total",
+      "document_no": "ABS-SYS-10-03",
+      "label": "K-BDS 데이터 설계서",
+      "file": "docs/total.html",
+      "version": "v0.1",
+      "updated": "2026-09-10",
+      "author": "김선정",
+      "note": "K-BDS 데이터 표준화 방안 정리"
     }
   ]
 }
