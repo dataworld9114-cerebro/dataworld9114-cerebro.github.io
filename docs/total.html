@@ -2906,6 +2906,21 @@ cmInit();
 /* MASTER_LIST(CM) 로딩 이후 비교표 재렌더 — 초기 렌더가 CM 정의보다 먼저 실행되는 문제 보정 */
 function cmpRerenderAll(){try{_cmIdx=null;if(typeof renderKraCompare==='function')renderKraCompare();if(typeof renderKEACompare==='function')renderKEACompare();if(typeof renderKNACompare==='function')renderKNACompare();if(typeof renderKVCompare==='function')renderKVCompare();}catch(e){}}
 cmpRerenderAll();
+
+/* 바깥 가이드 탭 또는 새 창 URL에서 설계서 내부 탭을 선택한다. */
+var KBDS_INNER_TABS=['cm','kra','kea','kna','kvar'];
+function kbdsOpenInnerTab(tab){
+  if(KBDS_INNER_TABS.indexOf(tab)<0)return;
+  goTab(tab);
+  window.scrollTo({top:0,behavior:'auto'});
+}
+window.addEventListener('message',function(event){
+  if(event.source!==parent)return;
+  var data=event.data||{};
+  if(data.type==='kbds-inner-tab')kbdsOpenInnerTab(data.tab);
+});
+var kbdsInitialTab=(location.hash||'').replace(/^#/,'');
+if(kbdsInitialTab)kbdsOpenInnerTab(kbdsInitialTab);
 </script>
 
 </body></html>
