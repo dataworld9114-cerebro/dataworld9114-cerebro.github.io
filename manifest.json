@@ -1,23 +1,58 @@
 {
   "site_title": "K-BDS 데이터 표준 항목 분석 및 표준화 설계서",
-  "release": "v0.5",
+  "release": "v1.0",
   "default_doc": "total",
   "groups": [
     {
       "id": "standard",
       "label": "분석",
-      "docs": ["algorithm","kra", "kea", "kna", "kvar", "kpop", "kmap"]
+      "docs": [
+        "algorithm",
+        "kra",
+        "kea",
+        "kna",
+        "kvar",
+        "kpop",
+        "kmap"
+      ]
     },
     {
       "id": "standard2",
       "label": "설계",
-      "docs": ["total"],
+      "docs": [
+        "total"
+      ],
       "views": [
-        { "id": "total", "label": "K-BDS 데이터 설계서", "doc": "total", "inner_tab": "cm" },
-        { "id": "total-kra", "label": "NGS 유전체 (KRA)", "doc": "total", "inner_tab": "kra" },
-        { "id": "total-kea", "label": "기능유전체 (KEA)", "doc": "total", "inner_tab": "kea" },
-        { "id": "total-kna", "label": "염기서열 (KNA)", "doc": "total", "inner_tab": "kna" },
-        { "id": "total-kvar", "label": "유전체 변이 (KVar)", "doc": "total", "inner_tab": "kvar" }
+        {
+          "id": "total",
+          "label": "K-BDS 데이터 설계서",
+          "doc": "total",
+          "inner_tab": "cm"
+        },
+        {
+          "id": "total-kra",
+          "label": "NGS 유전체 (KRA)",
+          "doc": "total",
+          "inner_tab": "kra"
+        },
+        {
+          "id": "total-kea",
+          "label": "기능유전체 (KEA)",
+          "doc": "total",
+          "inner_tab": "kea"
+        },
+        {
+          "id": "total-kna",
+          "label": "염기서열 (KNA)",
+          "doc": "total",
+          "inner_tab": "kna"
+        },
+        {
+          "id": "total-kvar",
+          "label": "유전체 변이 (KVar)",
+          "doc": "total",
+          "inner_tab": "kvar"
+        }
       ]
     }
   ],
