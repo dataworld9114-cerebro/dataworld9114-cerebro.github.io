@@ -149,6 +149,22 @@ def validate(manifest: dict) -> None:
                 if doc_id not in known_ids:
                     problems.append(f"그룹 '{gid}'의 문서 id가 존재하지 않습니다: '{doc_id}'")
                 grouped_docs.append(doc_id)
+            seen_view_ids = set()
+            for view in group.get("views", []):
+                view_id = view.get("id")
+                view_doc = view.get("doc")
+                if not view_id or not view.get("label") or not view_doc:
+                    problems.append(
+                        f"그룹 '{gid}'의 views 항목에는 'id', 'label', 'doc'이 필요합니다.")
+                if view_id in seen_view_ids:
+                    problems.append(f"그룹 '{gid}'의 view id가 중복됩니다: '{view_id}'")
+                seen_view_ids.add(view_id)
+                if view_doc not in known_ids:
+                    problems.append(
+                        f"그룹 '{gid}'의 view 문서 id가 존재하지 않습니다: '{view_doc}'")
+                if view_doc not in group.get("docs", []):
+                    problems.append(
+                        f"그룹 '{gid}'의 view 문서가 docs에 포함되지 않았습니다: '{view_doc}'")
         missing = known_ids - set(grouped_docs)
         if missing:
             problems.append("상위 그룹에 포함되지 않은 문서가 있습니다: " + ", ".join(sorted(missing)))
