@@ -54,6 +54,13 @@
           "inner_tab": "kvar"
         }
       ]
+    }, 
+    {
+      "id": "standard3",
+      "label": "오믹스",
+      "docs": [
+        "omix"
+      ]
     }
   ],
   "docs": [
@@ -136,6 +143,16 @@
       "updated": "2026-09-15",
       "author": "김선정",
       "note": "K-BDS 데이터 표준화 방안 정리"
+    },
+    {
+      "id": "omix",
+      "document_no": "ABS-SYS-10-04",
+      "label": "K-BDS 오믹스 매칭 정의서",
+      "file": "docs/omix.html",
+      "version": "v1.0",
+      "updated": "2026-09-21",
+      "author": "김선정",
+      "note": "K-BDS 오믹스 헤더 데이터 매칭 항목 정리"
     }
   ]
 }
