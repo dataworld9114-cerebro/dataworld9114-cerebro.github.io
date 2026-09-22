@@ -149,8 +149,8 @@
       "document_no": "ABS-SYS-10-04",
       "label": "K-BDS 오믹스 매칭 정의서",
       "file": "docs/omix.html",
-      "version": "v1.0",
-      "updated": "2026-09-21",
+      "version": "v1.1",
+      "updated": "2026-09-22",
       "author": "김선정",
       "note": "K-BDS 오믹스 헤더 데이터 매칭 항목 정리"
     }
